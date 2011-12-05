@@ -373,11 +373,15 @@ map_new_traffic(struct map_methods *meth, struct attr **attrs, struct callback_l
 	*meth=map_methods_traffic;
 
 	m=g_new0(struct map_priv, 1);
-	m->id=++map_id;
-	m->filename=g_strdup(wexp_data[0]);
-	m->is_pipe=is_pipe;
-	if (flags) 
-		m->flags=flags->u.num;
+	m->id=++map_id; // will be there
+	m->filename=g_strdup(wexp_data[0]); // file name will has gone
+	m->is_pipe=is_pipe; // will has gone
+	if (flags)  
+		m->flags=flags->u.num; // 
+	
+	
+	// счас здесь создадим файлик с содержимым
+	// 
 	dbg(0,"map_new_traffic %s %s\n", m->filename, wdata);
 	if (charset) {
 		m->charset=g_strdup(charset->u.str);
