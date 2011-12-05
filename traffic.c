@@ -52,7 +52,7 @@ get_line(struct map_rect_priv *mr)
 		mr->lastlen=strlen(mr->line)+1;
 		if (strlen(mr->line) >= SIZE-1) 
 			printf("line too long\n");
-	        dbg(0,"read traffic line: %s\n", mr->line);
+	        dbg(1,"read traffic line: %s\n", mr->line);
 	}
 }
 
@@ -88,7 +88,7 @@ parse_line(struct map_rect_priv *mr, int attr)
 static int
 traffic_coord_get(void *priv_data, struct coord *c, int count)
 {
-  dbg(0,"Count is %d\n",count);
+  dbg(1,"Count is %d\n",count);
 	struct map_rect_priv *mr=priv_data;
 	int ret=0;
 	dbg(1,"traffic_coord_get %d\n",count);
@@ -240,7 +240,7 @@ static struct item *
 map_rect_get_item_traffic(struct map_rect_priv *mr)
 {
 	char *p,type[SIZE];
-	dbg(0,"map_rect_get_item_traffic id_hi=%d line=%s\n", mr->item.id_hi, mr->line);
+	dbg(1,"map_rect_get_item_traffic id_hi=%d line=%s\n", mr->item.id_hi, mr->line);
 	if (!mr->f) {
 		return NULL;
 	}
@@ -251,7 +251,7 @@ map_rect_get_item_traffic(struct map_rect_priv *mr)
 	}
 	for(;;) {
 		if (feof(mr->f)) {
-			dbg(0,"map_rect_get_item_traffic: eof %d\n",mr->item.id_hi);
+			dbg(1,"map_rect_get_item_traffic: eof %d\n",mr->item.id_hi);
 			if (mr->m->flags & 1) {
 				if (!mr->item.id_hi) 
 					return NULL;
@@ -282,7 +282,7 @@ map_rect_get_item_traffic(struct map_rect_priv *mr)
 				get_line(mr);
 				continue;
 			}
-			dbg(0,"map_rect_get_item_traffic: point found\n");
+			dbg(1,"map_rect_get_item_traffic: point found\n");
 			mr->eoc=0;
 			mr->item.id_lo=mr->pos;
 		} else {
@@ -290,7 +290,7 @@ map_rect_get_item_traffic(struct map_rect_priv *mr)
 				get_line(mr);
 				continue;
 			}
-			dbg(0,"map_rect_get_item_traffic: line found\n");
+			dbg(1,"map_rect_get_item_traffic: line found\n");
 			if (! mr->line[0]) {
 				get_line(mr);
 				continue;
@@ -344,6 +344,21 @@ static struct map_methods map_methods_traffic = {
 	map_rect_get_item_byid_traffic,
 };
 
+/*struct TraffCoord
+{
+	double FirstCoord, SecondCoord;
+	char Direction[2];
+	//int MaxSpeed;
+} traf[100] = {  {4629.868000,3037.662000,4623.916000,3046.296000,'N','E','N','E',5}
+  
+};*/
+
+//type=street_traffic
+//4629.868000 N 3037.662000 E
+//4623.916000 N 3046.296000 E
+//4628.916000 N 3081.296000 E
+//4624.916000 N 3046.296000 E
+
 static struct map_priv *
 map_new_traffic(struct map_methods *meth, struct attr **attrs, struct callback_list *cbl)
 {
@@ -358,7 +373,7 @@ map_new_traffic(struct map_methods *meth, struct attr **attrs, struct callback_l
 	if (! data)
 		return NULL;
 	dbg(1,"map_new_traffic %s\n", data->u.str);	 // dummy
-	fprintf(stderr,"traffic map : %s\n", data->u.str); // dummy
+	//fprintf(stderr,"traffic map : %s\n", data->u.str); // dummy
 	wdata=g_strdup(data->u.str); // strings points to file of map
 	//dbg(0,"data %s\n",data->u.str);
 	len=strlen(wdata); 
@@ -374,14 +389,24 @@ map_new_traffic(struct map_methods *meth, struct attr **attrs, struct callback_l
 
 	m=g_new0(struct map_priv, 1);
 	m->id=++map_id; // will be there
-	m->filename=g_strdup(wexp_data[0]); // file name will has gone
+	//m->filename=g_strdup(wexp_data[0]); // file name will has gone
 	m->is_pipe=is_pipe; // will has gone
 	if (flags)  
 		m->flags=flags->u.num; // 
 	
 	
 	// счас здесь создадим файлик с содержимым
-	// 
+	char *fname = "./hello_my.txt";
+	char *fmode = "w";
+	FILE * fil = fopen(fname,fmode);
+	m->filename = fname;
+	fprintf(fil,"type=street_traffic\n");
+	
+	fprintf(fil,"4629.868000 N 3037.662000 E\n");
+	fprintf(fil,"4623.916000 N 3046.296000 E\n");
+	fprintf(fil,"4628.916000 N 3081.296000 E\n");
+	fprintf(fil,"4624.916000 N 3046.296000 E\n");
+	fclose(fil);
 	dbg(0,"map_new_traffic %s %s\n", m->filename, wdata);
 	if (charset) {
 		m->charset=g_strdup(charset->u.str);
