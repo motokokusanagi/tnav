@@ -127,7 +127,7 @@ CC = gcc
 CCDEPMODE = depmode=gcc3
 CCLD_FOR_BUILD = gcc
 CC_FOR_BUILD = gcc
-CFLAGS = -g -O2 -Wall -Wcast-align -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wpointer-arith -Wreturn-type -D_GNU_SOURCE -ffast-math -I/usr/include/dbus-1.0 -I/usr/lib/dbus-1.0/include
+CFLAGS = -g -O2 -Wall -Wcast-align -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wpointer-arith -Wreturn-type -D_GNU_SOURCE -ffast-math -I/usr/include/dbus-1.0 -I/usr/lib/dbus-1.0/include -ldbus-1
 CPP = gcc -E
 CPPFLAGS = 
 CRYPTO_LIBS = -lcrypto
