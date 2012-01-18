@@ -35,7 +35,7 @@
 #include "attr.h"
 #include "transform.h"
 #include "file.h"
-
+#include <json/json.h>
 #include <dbus/dbus.h>
 #include "traffic.h"
 
@@ -58,8 +58,9 @@ get_line(struct map_rect_priv *mr)
 	        dbg(1,"read traffic line: %s\n", mr->line);
 	}
 }
-
-void query(void);
+struct TraffCoord *traf;
+void query(struct TraffCoord *traf,int *count);
+int  ParseJsonData (struct TraffCoord *TraffData, char * strJson);
 
 static void
 map_destroy_traffic(struct map_priv *m)
@@ -244,16 +245,18 @@ map_rect_destroy_traffic(struct map_rect_priv *mr)
 static struct item *
 map_rect_get_item_traffic(struct map_rect_priv *mr)
 {
+	printf("\n%p",&mr->item);
 	char *p,type[SIZE];
 	dbg(1,"map_rect_get_item_traffic id_hi=%d line=%s\n", mr->item.id_hi, mr->line);
 	if (!mr->f) {
 		return NULL;
 	}
+	if (mr->more != 0) printf("\n%d",mr->more);
 	//more is special element for i
-	while (mr->more) {
-		struct coord c;
-		traffic_coord_get(mr, &c, 1);
-	}
+	//while (mr->more) {
+		//struct coord c;
+		//traffic_coord_get(mr, &c, 1);
+	//}
 	for(;;) {
 		if (feof(mr->f)) {
 			dbg(1,"map_rect_get_item_traffic: eof %d\n",mr->item.id_hi);
@@ -358,11 +361,14 @@ static struct map_methods map_methods_traffic = {
   
 };*/
 
-//type=street_traffic
-//4629.868000 N 3037.662000 E
-//4623.916000 N 3046.296000 E
-//4628.916000 N 3081.296000 E
-//4624.916000 N 3046.296000 E
+
+
+struct TraffCoord
+{
+	double FirstCoord, SecondCoord, ThirdCoord, FourthCoord;
+	char Direction[4];
+	int MaxSpeed;
+};
 
 static struct map_priv *
 map_new_traffic(struct map_methods *meth, struct attr **attrs, struct callback_list *cbl)
@@ -400,135 +406,90 @@ map_new_traffic(struct map_methods *meth, struct attr **attrs, struct callback_l
 	//
 	char *fname = "./hello_my.txt";
 	char *fmode = "w";
+	//char *buf=malloc(1024);;
 	m->filename = g_strdup(fname);
 	FILE * fil = fopen(fname,fmode);
-	fprintf(fil,"type=street_traffic\n");
-	fprintf(fil,"4629.868000 N 3037.662000 E\n");
-	fprintf(fil,"4623.916000 N 3046.296000 E\n");
+	if(fil==NULL) {
+	  return 0;
+	}
+	struct TraffCoord* here = (struct TraffCoord*)malloc(sizeof(struct TraffCoord)*100);;
+	int count=0,i=0;
+	query(here,&count);
+	printf("count:%d\n",count);
+
+	for(i=0;i<2;i++) {
+		fprintf(fil,"type=street_traffic\n");
+		fprintf(fil,"%.6f %c %.6f %c\n",here[i].FirstCoord,here[i].Direction[0],here[i].SecondCoord,here[i].Direction[1]);
+		fprintf(fil,"%.6f %c %.6f %c\n",here[i].ThirdCoord,here[i].Direction[2],here[i].FourthCoord,here[i].Direction[3]);
+
+
+		//
+		//printf("type=street_traffic\n");
+		//printf("%.6f %c %.6f %c\n",here[i].FirstCoord,here[i].Direction[0],here[i].SecondCoord,here[i].Direction[1]);
+		//printf("%.6f %c %.6f %c\n",here[i].ThirdCoord,here[i].Direction[2],here[i].FourthCoord,here[i].Direction[3]);
+	}
+	//printf(buf);
+	//fprintf(fil,buf);
+	//fprintf(fil,"type=street_traffic\n");
+	//fprintf(fil,"4629.868000 N 3037.662000 E\n");
+	//fprintf(fil,"4623.916000 N 3046.296000 E\n");
+	
+	
+	
 	//fprintf(fil,"4628.916000 N 3081.296000 E\n");
 	//fprintf(fil,"4624.916000 N 3046.296000 E\n");
 	fclose(fil);
-	dbg(0,"map_new_traffic %s\n", m->filename);
+	dbg(1,"map_new_traffic %s\n", m->filename);
 	if (charset) {
 		m->charset=g_strdup(charset->u.str);
 		meth->charset=m->charset;
 	}
 	file_wordexp_destroy(wexp);
 	g_free(wdata);
-	query(); //
+	
 	return m;
 }
 
 /*
-
-void query(void) 
+int  ParseJsonData (struct TraffCoord *TraffData, char * strJson)
 {
-  char *param="get";
-   DBusMessage* msg;
-   DBusMessageIter args;
-   DBusConnection* conn;
-   DBusError err;
-   DBusPendingCall* pending;
-   int ret;
-   //dbus_uint32_t stat;
-   //dbus_uint32_t level;
-  char *stat = "";
-  char *level = "";
-   printf("Calling remote method with %s\n", param);
+	struct json_object *JsonData;
+	struct json_object *JsonTraffCoordData, *JsonTraffCoord, *JsonTmp;
+	int Length, i;
 
-   // initialiset the errors
-   dbus_error_init(&err);
+	JsonData = json_tokener_parse(strJson);
 
-   // connect to the system bus and check for errors
-   conn = dbus_bus_get(DBUS_BUS_SESSION, &err);
-   if (dbus_error_is_set(&err)) { 
-      fprintf(stderr, "Connection Error (%s)\n", err.message); 
-      dbus_error_free(&err);
-   }
-   if (NULL == conn) { 
-      exit(1); 
-   }
+	JsonTraffCoordData = json_object_object_get(JsonData, "TraffCoordData");
+	Length = json_object_array_length(JsonTraffCoordData);
 
-   // request our name on the bus
-   ret = dbus_bus_request_name(conn, "traffic.method.caller", DBUS_NAME_FLAG_REPLACE_EXISTING , &err);
-   if (dbus_error_is_set(&err)) { 
-      fprintf(stderr, "Name Error (%s)\n", err.message); 
-      dbus_error_free(&err);
-   }
-   if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret) { 
-      exit(1);
-   }
-
-   // create a new method call and check for errors
-   msg = dbus_message_new_method_call("traffic.method.server", // target for the method call
-                                      "/traffic/method/Object", // object to call on
-                                      "traffic.method.Type", // interface to call on
-                                      "Method"); // method name
-   if (NULL == msg) { 
-      fprintf(stderr, "Message Null\n");
-      exit(1);
-   }
-
-   // append arguments
-   dbus_message_iter_init_append(msg, &args);
-   if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &param)) {
-      fprintf(stderr, "Out Of Memory!\n"); 
-      exit(1);
-   }
-   
-   // send message and get a handle for a reply
-   if (!dbus_connection_send_with_reply (conn, msg, &pending, -1)) { // -1 is default timeout
-      fprintf(stderr, "Out Of Memory!\n"); 
-      exit(1);
-   }
-   if (NULL == pending) { 
-      fprintf(stderr, "Pending Call Null\n"); 
-      exit(1); 
-   }
-   dbus_connection_flush(conn);
-   
-   printf("Request Sent\n");
-   
-   // free message
-   dbus_message_unref(msg);
-   
-   // block until we recieve a reply
-   dbus_pending_call_block(pending);
-
-   // get the reply message
-   msg = dbus_pending_call_steal_reply(pending);
-   if (NULL == msg) {
-      fprintf(stderr, "Reply Null\n"); 
-      exit(1); 
-   }
-   // free the pending message handle
-   dbus_pending_call_unref(pending);
-
-   // read the parameters
-   if (!dbus_message_iter_init(msg, &args))
-      fprintf(stderr, "Message has no arguments!\n"); 
-   else if (DBUS_TYPE_STRING != dbus_message_iter_get_arg_type(&args)) 
-      fprintf(stderr, "Argument is not boolean!\n"); 
-   else
-      dbus_message_iter_get_basic(&args, &stat);
-
-   if (!dbus_message_iter_next(&args))
-      fprintf(stderr, "Message has too few arguments!\n"); 
-   else if (DBUS_TYPE_STRING != dbus_message_iter_get_arg_type(&args)) 
-      fprintf(stderr, "Argument is not int!\n"); 
-   else
-      dbus_message_iter_get_basic(&args, &level);
-
-   printf("Got Reply: %s, %s\n", stat, level);
-   
-   // free reply and close connection
-   dbus_message_unref(msg);   
-   dbus_bus_release_name(conn,"traffic.method.caller",&err);
-   //dbus_connection_close(conn);
+	for (i=0; i<Length; i++)
+	{
+		JsonTraffCoord = json_object_array_get_idx(JsonTraffCoordData, i);
+		JsonTmp = json_object_object_get(JsonTraffCoord, "FirstCoord");
+		TraffData[i].FirstCoord = json_object_get_double(JsonTmp);
+		JsonTmp = json_object_object_get(JsonTraffCoord, "FirstDirection");
+		TraffData[i].Direction[0] = *json_object_get_string(JsonTmp);
+		JsonTmp = json_object_object_get(JsonTraffCoord, "SecondCoord");
+		TraffData[i].SecondCoord = json_object_get_double(JsonTmp);
+		JsonTmp = json_object_object_get(JsonTraffCoord, "SecondDirection");
+		TraffData[i].Direction[1] = *json_object_get_string(JsonTmp);
+		JsonTmp = json_object_object_get(JsonTraffCoord, "ThirdCoord");
+		TraffData[i].ThirdCoord = json_object_get_double(JsonTmp);
+		JsonTmp = json_object_object_get(JsonTraffCoord, "ThirdDirection");
+		TraffData[i].Direction[2] = *json_object_get_string(JsonTmp);
+		JsonTmp = json_object_object_get(JsonTraffCoord, "FourthCoord");
+		TraffData[i].FourthCoord = json_object_get_double(JsonTmp);
+		JsonTmp = json_object_object_get(JsonTraffCoord, "FourthDirection");
+		TraffData[i].Direction[3] = *json_object_get_string(JsonTmp);
+		JsonTmp = json_object_object_get(JsonTraffCoord, "MaxSpeed");
+		TraffData[i].MaxSpeed = json_object_get_int(JsonTmp);
+	}
+	return Length;
 }
 */
 
-void query(void) 
+//void query(char *str)
+void query(struct TraffCoord *traf,int *count)
 {
    DBusMessage* msg;
    DBusMessageIter args;
@@ -536,16 +497,11 @@ void query(void)
    DBusError err;
    DBusPendingCall* pending;
    int ret;
-   //int stat;
-   unsigned int l=0;
-   char *stat= "";
-   dbus_uint32_t level;
+   char *stat;
    char *param = "get";
-   printf("Calling remote method with %s\n", param);
-
+   //printf("Calling remote method with %s\n", param);
    // initialiset the errors
    dbus_error_init(&err);
-
    // connect to the system bus and check for errors
    conn = dbus_bus_get(DBUS_BUS_SESSION, &err);
    if (dbus_error_is_set(&err)) { 
@@ -619,22 +575,24 @@ void query(void)
    else
       dbus_message_iter_get_basic(&args, &stat);
    
-  printf(stat);
-   
-      
- /* if (!dbus_message_iter_next(&args))
-      fprintf(stderr, "Message has too few arguments!\n"); 
-   else if (DBUS_TYPE_UINT32 != dbus_message_iter_get_arg_type(&args)) 
-      fprintf(stderr, "Argument is not int!\n"); 
-   else
-      dbus_message_iter_get_basic(&args, &level);*/
 
-   printf("Got Reply: %s, \n", stat);
+ /// stat is json
+
+
+   //strcpy(str,stat);
+
+  // printf("Got Reply: %s, \n", stat);
    l:
    // free reply and close connection
-   //free(stat);
+   
    dbus_message_unref(msg);   
    dbus_bus_release_name(conn,"traffic.method.caller",&err);
+
+   if(stat!=NULL){
+      *count = ParseJsonData(traf,stat);
+   } else {
+
+   }
    //dbus_connection_close(conn);
 }
 
