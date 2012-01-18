@@ -57,9 +57,9 @@ get_line(struct map_rect_priv *mr)
 	        dbg(1,"read traffic line: %s\n", mr->line);
 	}
 }
-struct TraffCoord *traf;
-void query(struct TraffCoord *traf,int *count);
-int  ParseJsonData (struct TraffCoord *TraffData, char * strJson);
+//struct TraffCoord *traf;
+//void query(struct TraffCoord *traf,int *count);
+//int  ParseJsonData (struct TraffCoord *TraffData, char * strJson);
 
 static void
 map_destroy_traffic(struct map_priv *m)
@@ -399,22 +399,22 @@ map_new_traffic(struct map_methods *meth, struct attr **attrs, struct callback_l
 	if(fil==NULL) {
 	  return 0;
 	}
-	struct TraffCoord* here = (struct TraffCoord*)malloc(sizeof(struct TraffCoord)*100);;
-	int count=0,i=0;
-	query(here,&count);
-	printf("count:%d\n",count);
+//	struct TraffCoord* here = (struct TraffCoord*)malloc(sizeof(struct TraffCoord)*100);;
+//	int count=0,i=0;
+//	query(here,&count);
+//	printf("count:%d\n",count);
 
-	for(i=0;i<2;i++) {
-		fprintf(fil,"type=street_traffic\n");
-		fprintf(fil,"%.6f %c %.6f %c\n",here[i].FirstCoord,here[i].Direction[0],here[i].SecondCoord,here[i].Direction[1]);
-		fprintf(fil,"%.6f %c %.6f %c\n",here[i].ThirdCoord,here[i].Direction[2],here[i].FourthCoord,here[i].Direction[3]);
-
-
-		//
-		//printf("type=street_traffic\n");
-		//printf("%.6f %c %.6f %c\n",here[i].FirstCoord,here[i].Direction[0],here[i].SecondCoord,here[i].Direction[1]);
-		//printf("%.6f %c %.6f %c\n",here[i].ThirdCoord,here[i].Direction[2],here[i].FourthCoord,here[i].Direction[3]);
-	}
+//	for(i=0;i<2;i++) {
+//		fprintf(fil,"type=street_traffic\n");
+//		fprintf(fil,"%.6f %c %.6f %c\n",here[i].FirstCoord,here[i].Direction[0],here[i].SecondCoord,here[i].Direction[1]);
+//		fprintf(fil,"%.6f %c %.6f %c\n",here[i].ThirdCoord,here[i].Direction[2],here[i].FourthCoord,here[i].Direction[3]);
+//
+//
+//		//
+//		//printf("type=street_traffic\n");
+//		//printf("%.6f %c %.6f %c\n",here[i].FirstCoord,here[i].Direction[0],here[i].SecondCoord,here[i].Direction[1]);
+//		//printf("%.6f %c %.6f %c\n",here[i].ThirdCoord,here[i].Direction[2],here[i].FourthCoord,here[i].Direction[3]);
+//	}
 	//printf(buf);
 	//fprintf(fil,buf);
 	//fprintf(fil,"type=street_traffic\n");
