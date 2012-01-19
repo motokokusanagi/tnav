@@ -364,76 +364,22 @@ map_new_traffic(struct map_methods *meth, struct attr **attrs, struct callback_l
 	struct attr *data=attr_search(attrs, NULL, attr_data); // look for data 
 	struct attr *charset=attr_search(attrs, NULL, attr_charset); // charset 
 	struct attr *flags=attr_search(attrs, NULL, attr_flags); // flags
-	struct file_wordexp *wexp; // ???
-	int len,is_pipe=0;  //???
-	char *wdata; //???
-	char **wexp_data; // ???
+
 	if (! data)
 		return NULL;
-	dbg(1,"map_new_traffic %s\n", data->u.str);	 // dummy
-	//fprintf(stderr,"traffic map : %s\n", data->u.str); // dummy
-	wdata=g_strdup(data->u.str); // strings points to file of map
-	//dbg(0,"data %s\n",data->u.str);
-	len=strlen(wdata); 
-	// pipes will be not used
-	if (len && wdata[len-1] == '|') {
-		wdata[len-1]='\0';
-		is_pipe=1;
-	}
-	wexp=file_wordexp_new(wdata);
-	wexp_data=file_wordexp_get_array(wexp);
+
 	*meth=map_methods_traffic;
 	m=g_new0(struct map_priv, 1);
-	m->id=++map_id; // will be there
-	//m->filename=g_strdup(wexp_data[0]); // file name will has gone
-	m->is_pipe=is_pipe; // will has gone
+	m->id=++map_id;
+
 	if (flags)  
 		m->flags=flags->u.num; // 
-	// счас здесь создадим файлик с содержимым
-	//
-	char *fname = "./hello_my.txt";
-	char *fmode = "w";
-	//char *buf=malloc(1024);;
-	m->filename = g_strdup(fname);
-	FILE * fil = fopen(fname,fmode);
-	if(fil==NULL) {
-	  return 0;
-	}
-//	struct TraffCoord* here = (struct TraffCoord*)malloc(sizeof(struct TraffCoord)*100);;
-//	int count=0,i=0;
-//	query(here,&count);
-//	printf("count:%d\n",count);
 
-//	for(i=0;i<2;i++) {
-//		fprintf(fil,"type=street_traffic\n");
-//		fprintf(fil,"%.6f %c %.6f %c\n",here[i].FirstCoord,here[i].Direction[0],here[i].SecondCoord,here[i].Direction[1]);
-//		fprintf(fil,"%.6f %c %.6f %c\n",here[i].ThirdCoord,here[i].Direction[2],here[i].FourthCoord,here[i].Direction[3]);
-//
-//
-//		//
-//		//printf("type=street_traffic\n");
-//		//printf("%.6f %c %.6f %c\n",here[i].FirstCoord,here[i].Direction[0],here[i].SecondCoord,here[i].Direction[1]);
-//		//printf("%.6f %c %.6f %c\n",here[i].ThirdCoord,here[i].Direction[2],here[i].FourthCoord,here[i].Direction[3]);
-//	}
-	//printf(buf);
-	//fprintf(fil,buf);
-	//fprintf(fil,"type=street_traffic\n");
-	//fprintf(fil,"4629.868000 N 3037.662000 E\n");
-	//fprintf(fil,"4623.916000 N 3046.296000 E\n");
-	
-	
-	
-	//fprintf(fil,"4628.916000 N 3081.296000 E\n");
-	//fprintf(fil,"4624.916000 N 3046.296000 E\n");
-	fclose(fil);
-	dbg(1,"map_new_traffic %s\n", m->filename);
 	if (charset) {
 		m->charset=g_strdup(charset->u.str);
 		meth->charset=m->charset;
 	}
-	file_wordexp_destroy(wexp);
-	g_free(wdata);
-	
+
 	return m;
 }
 
@@ -475,8 +421,7 @@ int  ParseJsonData (struct TraffCoord *TraffData, char * strJson)
 }
 */
 
-//void query(char *str)
-void query(GList *traffic_list)
+void query_stub(GList *traffic_list)
 {
 	traffic_item item_1 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
 	item_1.x1=4629.868000;
@@ -586,24 +531,155 @@ void query(GList *traffic_list)
 //      fprintf(stderr, "Argument is not string!\n");
 //   else
 //      dbus_message_iter_get_basic(&args, &stat);
-//
-//
+
 // /// stat is json
-//
-//
+
+
 //   //strcpy(str,stat);
-//
+
 //  // printf("Got Reply: %s, \n", stat);
 //   l:
 //   // free reply and close connection
-//
+
 //   dbus_message_unref(msg);
 //   dbus_bus_release_name(conn,"traffic.method.caller",&err);
-//
+
 //   if(stat!=NULL){
 //      *count = ParseJsonData(traf,stat);
 //   } else {
+
+//   }
+//   //dbus_connection_close(conn);
+
+}
+
+void query_real(GList *traffic_list)
+{
+	traffic_item item_1 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
+	item_1.x1=4629.868000;
+	item_1.y1=3037.662000;
+	item_1.x2=4624.916000;
+	item_1.y2=3046.296000;
+	item_1.sn1='N';
+	item_1.sn2='N';
+    item_1.ew1='E';
+    item_1.ew2='E';
+    item_1.speed=0.0;
+
+    traffic_item item_2 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
+        item_2.x2=4623.916000;
+    	item_2.y2=3046.296000;
+    	item_2.x1=4624.916000;
+    	item_2.y1=3046.296000;
+    	item_2.sn1='N';
+    	item_2.sn2='N';
+        item_2.ew1='E';
+        item_2.ew2='E';
+        item_2.speed=0.0;
+
+    traffic_list = g_list_append (traffic_list, item_1);
+    traffic_list = g_list_append (traffic_list, item_2);
+
+//   DBusMessage* msg;
+//   DBusMessageIter args;
+//   DBusConnection* conn;
+//   DBusError err;
+//   DBusPendingCall* pending;
+//   int ret;
+//   char *stat;
+//   char *param = "get";
+//   //printf("Calling remote method with %s\n", param);
+//   // initialiset the errors
+//   dbus_error_init(&err);
+//   // connect to the system bus and check for errors
+//   conn = dbus_bus_get(DBUS_BUS_SESSION, &err);
+//   if (dbus_error_is_set(&err)) {
+//      fprintf(stderr, "Connection Error (%s)\n", err.message);
+//      dbus_error_free(&err);
+//   }
+//   if (NULL == conn) {
+//      exit(1);
+//   }
 //
+//   // request our name on the bus
+//   ret = dbus_bus_request_name(conn, "traffic.method.caller", DBUS_NAME_FLAG_REPLACE_EXISTING , &err);
+//   if (dbus_error_is_set(&err)) {
+//      fprintf(stderr, "Name Error (%s)\n", err.message);
+//      dbus_error_free(&err);
+//   }
+//   if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret) {
+//      exit(1);
+//   }
+//
+//   // create a new method call and check for errors
+//   msg = dbus_message_new_method_call("traffic.method.server", // target for the method call
+//                                      "/traffic/method/Object", // object to call on
+//                                      "traffic.method.Type", // interface to call on
+//                                      "Method"); // method name
+//   if (NULL == msg) {
+//      fprintf(stderr, "Message Null\n");
+//      exit(1);
+//   }
+//
+//   // append arguments
+//   dbus_message_iter_init_append(msg, &args);
+//   if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &param)) {
+//      fprintf(stderr, "Out Of Memory!\n");
+//      exit(1);
+//   }
+//
+//   // send message and get a handle for a reply
+//   if (!dbus_connection_send_with_reply (conn, msg, &pending, -1)) { // -1 is default timeout
+//      fprintf(stderr, "Out Of Memory!\n");
+//      exit(1);
+//   }
+//   if (NULL == pending) {
+//      fprintf(stderr, "Pending Call Null\n");
+//      exit(1);
+//   }
+//   dbus_connection_flush(conn);
+//
+//   printf("Request Sent\n");
+//
+//   // free message
+//   dbus_message_unref(msg);
+//
+//   // block until we recieve a reply
+//   dbus_pending_call_block(pending);
+//
+//   // get the reply message
+//   msg = dbus_pending_call_steal_reply(pending);
+//   if (NULL == msg) {
+//      fprintf(stderr, "Reply Null\n");
+//     // exit(1);
+//      goto l;
+//   }
+//   // free the pending message handle
+//   dbus_pending_call_unref(pending);
+//   // read the parameters
+//   if (!dbus_message_iter_init(msg, &args))
+//      fprintf(stderr, "Message has no arguments!\n");
+//   else if (DBUS_TYPE_STRING!= dbus_message_iter_get_arg_type(&args))
+//      fprintf(stderr, "Argument is not string!\n");
+//   else
+//      dbus_message_iter_get_basic(&args, &stat);
+
+// /// stat is json
+
+
+//   //strcpy(str,stat);
+
+//  // printf("Got Reply: %s, \n", stat);
+//   l:
+//   // free reply and close connection
+
+//   dbus_message_unref(msg);
+//   dbus_bus_release_name(conn,"traffic.method.caller",&err);
+
+//   if(stat!=NULL){
+//      *count = ParseJsonData(traf,stat);
+//   } else {
+
 //   }
 //   //dbus_connection_close(conn);
 
@@ -615,4 +691,3 @@ plugin_init(void)
 	dbg(1,"traffic: plugin_init\n");
 	plugin_register_map_type("traffic", map_new_traffic);
 }
-
