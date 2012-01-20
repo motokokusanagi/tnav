@@ -231,35 +231,35 @@ map_rect_new_traffic(struct map_priv *map, struct map_selection *sel)
 static void
 map_rect_destroy_traffic(struct map_rect_priv *mr)
 {
-//	if (mr->f) {
-//		if (mr->m->is_pipe) {
-//#ifdef HAVE_POPEN
-//			pclose(mr->f);
-//#endif
-//		}
-//		else {
-//			fclose(mr->f);
-//		}
-//	}
+
+
+
+
+
+
+
+
+
+
 	g_list_free (mr->traffic_list);
-        g_free(mr);
+    g_free(mr);
 }
 
 static struct item *
 map_rect_get_item_traffic(struct map_rect_priv *mr)
 {
-//	printf("\n%p",&mr->item);
+
 //	char *p,type[SIZE];
-//	dbg(1,"map_rect_get_item_traffic id_hi=%d line=%s\n", mr->item.id_hi, mr->line);
-//	if (!mr->f) {
-//		return NULL;
-//	}
-//	if (mr->more != 0) printf("\n%d",mr->more);
-//	//more is special element for i
-//	//while (mr->more) {
-//		//struct coord c;
-//		//traffic_coord_get(mr, &c, 1);
-//	//}
+	if(mr->traffic_list ) {
+		traffic_item* iterator = (traffic_item*)mr->traffic_list->data;
+		mr->traffic_list = g_list_next(mr->traffic_list);
+		mr->item.type = item_from_name("street_traffic");
+
+
+	}else {
+		return NULL;
+	}
+
 //	for(;;) {
 //		if (feof(mr->f)) {
 //			dbg(1,"map_rect_get_item_traffic: eof %d\n",mr->item.id_hi);
@@ -272,17 +272,10 @@ map_rect_get_item_traffic(struct map_rect_priv *mr)
 //					return NULL;
 //				mr->item.id_hi=1;
 //			}
-//			if (mr->m->is_pipe) {
-//#ifdef HAVE_POPEN
-//				pclose(mr->f);
-//				mr->f=popen(mr->args, "r");
-//				mr->pos=0;
-//				mr->lastlen=0;
-//#endif
-//			} else {
+
 //				fseek(mr->f, 0, SEEK_SET);
 //				clearerr(mr->f);
-//			}
+
 //			get_line(mr);
 //		}
 //		if ((p=strchr(mr->line,'\n')))
@@ -293,7 +286,7 @@ map_rect_get_item_traffic(struct map_rect_priv *mr)
 //				get_line(mr);
 //				continue;
 //			}
-//			dbg(1,"map_rect_get_item_traffic: point found\n");
+
 //			mr->eoc=0;
 //			mr->item.id_lo=mr->pos;
 //		} else {
@@ -301,7 +294,7 @@ map_rect_get_item_traffic(struct map_rect_priv *mr)
 //				get_line(mr);
 //				continue;
 //			}
-//			dbg(1,"map_rect_get_item_traffic: line found\n");
+
 //			if (! mr->line[0]) {
 //				get_line(mr);
 //				continue;
@@ -313,7 +306,7 @@ map_rect_get_item_traffic(struct map_rect_priv *mr)
 //		}
 //		dbg(1,"get_attrs %s\n", mr->attrs);
 //		if (attr_from_line(mr->attrs,"type",NULL,type,NULL)) {
-//			dbg(1,"type='%s'\n", type);
+
 //			mr->item.type=item_from_name(type);
 //			if (mr->item.type == type_none)
 //				printf("Warning: type '%s' unknown\n", type);
@@ -323,7 +316,7 @@ map_rect_get_item_traffic(struct map_rect_priv *mr)
 //		}
 //		mr->attr_last=attr_none;
 //		mr->more=1;
-//		dbg(1,"return attr='%s'\n", mr->attrs);
+
 		return &mr->item;
 	}
 }
@@ -331,17 +324,6 @@ map_rect_get_item_traffic(struct map_rect_priv *mr)
 static struct item *
 map_rect_get_item_byid_traffic(struct map_rect_priv *mr, int id_hi, int id_lo)
 {
-//	if (mr->m->is_pipe) {
-//#ifndef _MSC_VER
-//		pclose(mr->f);
-//		mr->f=popen(mr->args, "r");
-//		mr->pos=0;
-//		mr->lastlen=0;
-//#endif /* _MSC_VER */
-//	} else
-//		fseek(mr->f, id_lo, SEEK_SET);
-//	get_line(mr);
-//	mr->item.id_hi=id_hi;
 	return map_rect_get_item_traffic(mr);
 }
 

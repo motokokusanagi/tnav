@@ -21,10 +21,13 @@
 #include "attr.h"
 #include "coord.h"
 #include <glib.h>
-
+// TODO make traffic_item with ints
 typedef struct traffic_item
 {
-	double x1,x2,y1,y2;
+	int x1;
+	int y1;
+	int x2;
+	int y2;
 	char ew1,sn1,ew2,sn2,speed;
 }traffic_item;
 
@@ -39,8 +42,6 @@ struct map_priv {
 struct map_rect_priv {
 	struct map_selection *sel;
 	GList *traffic_list;
-	long pos;///
-	char line[SIZE];
 	int attr_pos;
 	enum attr_type attr_last;
 	char attrs[SIZE];
