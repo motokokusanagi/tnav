@@ -355,19 +355,18 @@ static struct map_methods map_methods_traffic = {
 	map_rect_get_item_byid_traffic,
 };
 
-
-
+// initializes new map instance and returns map methods struct to navit
 static struct map_priv *
 map_new_traffic(struct map_methods *meth, struct attr **attrs, struct callback_list *cbl)
 {
 	struct map_priv *m;
 	struct attr *data=attr_search(attrs, NULL, attr_data); // look for data 
-	struct attr *charset=attr_search(attrs, NULL, attr_charset); // charset 
-	struct attr *flags=attr_search(attrs, NULL, attr_flags); // flags
+	struct attr *charset=attr_search(attrs, NULL, attr_charset); // look for charset
+	struct attr *flags=attr_search(attrs, NULL, attr_flags); // we can configure plugin via flags
 
-	if (! data)
-		return NULL;
-
+	//if (! data)
+	//	return NULL;
+	// TODO: do something with data
 	*meth=map_methods_traffic;
 	m=g_new0(struct map_priv, 1);
 	m->id=++map_id;
@@ -379,7 +378,6 @@ map_new_traffic(struct map_methods *meth, struct attr **attrs, struct callback_l
 		m->charset=g_strdup(charset->u.str);
 		meth->charset=m->charset;
 	}
-
 	return m;
 }
 
@@ -421,6 +419,10 @@ int  ParseJsonData (struct TraffCoord *TraffData, char * strJson)
 }
 */
 
+
+#define debug1
+
+#ifdef debug1
 void query_stub(GList *traffic_list)
 {
 	traffic_item item_1 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
@@ -434,21 +436,20 @@ void query_stub(GList *traffic_list)
     item_1.ew2='E';
     item_1.speed=0.0;
     traffic_item item_2 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-        item_2.x2=4623.916000;
-    	item_2.y2=3046.296000;
-    	item_2.x1=4624.916000;
-    	item_2.y1=3046.296000;
-    	item_2.sn1='N';
-    	item_2.sn2='N';
-        item_2.ew1='E';
-        item_2.ew2='E';
-        item_2.speed=0.0;
-
+    item_2.x2=4623.916000;
+    item_2.y2=3046.296000;
+    item_2.x1=4624.916000;
+    item_2.y1=3046.296000;
+    item_2.sn1='N';
+    item_2.sn2='N';
+    item_2.ew1='E';
+    item_2.ew2='E';
+    item_2.speed=0.0;
     traffic_list = g_list_append (traffic_list, item_1);
     traffic_list = g_list_append (traffic_list, item_2);
 
 }
-
+#else
 void query_real(GList *traffic_list)
 {
 	traffic_item item_1 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
@@ -463,15 +464,15 @@ void query_real(GList *traffic_list)
     item_1.speed=0.0;
 
     traffic_item item_2 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-        item_2.x2=4623.916000;
-    	item_2.y2=3046.296000;
-    	item_2.x1=4624.916000;
-    	item_2.y1=3046.296000;
-    	item_2.sn1='N';
-    	item_2.sn2='N';
-        item_2.ew1='E';
-        item_2.ew2='E';
-        item_2.speed=0.0;
+    item_2.x2=4623.916000;
+    item_2.y2=3046.296000;
+    item_2.x1=4624.916000;
+    item_2.y1=3046.296000;
+   	item_2.sn1='N';
+    item_2.sn2='N';
+    item_2.ew1='E';
+    item_2.ew2='E';
+    item_2.speed=0.0;
 
     traffic_list = g_list_append (traffic_list, item_1);
     traffic_list = g_list_append (traffic_list, item_2);
@@ -485,9 +486,9 @@ void query_real(GList *traffic_list)
 //   char *stat;
 //   char *param = "get";
 //   //printf("Calling remote method with %s\n", param);
-//   // initialiset the errors
+//   //initialiset the errors
 //   dbus_error_init(&err);
-//   // connect to the system bus and check for errors
+//   //connect to the system bus and check for errors
 //   conn = dbus_bus_get(DBUS_BUS_SESSION, &err);
 //   if (dbus_error_is_set(&err)) {
 //      fprintf(stderr, "Connection Error (%s)\n", err.message);
@@ -578,17 +579,11 @@ void query_real(GList *traffic_list)
 //   }
 
 }
+#endif
 
-#define debug1
 
-void query(GList *traffic_list ){
-	#ifdef debug1
-	query_stub(traffic_list);
-	#else
-	query_real(traffic_list);
-	#endif
 
-}
+
 
 void
 plugin_init(void)
