@@ -330,24 +330,14 @@ int  ParseJsonData (struct TraffCoord *TraffData, char * strJson)
 void query(GList *traffic_list)
 {
 	traffic_item item_1 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-	item_1.x1=4629.868000;
-	item_1.y1=3037.662000;
-	item_1.x2=4624.916000;
-	item_1.y2=3046.296000;
-	item_1.sn1='N';
-	item_1.sn2='N';
-    item_1.ew1='E';
-    item_1.ew2='E';
+	item_1.coords[0].x=transform_from_geo(46.4978);
+	item_1.coords[0].y=transform_from_geo(30.6277);
+
     item_1.speed=0.0;
     traffic_item item_2 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-    item_2.x2=4623.916000;
-    item_2.y2=3046.296000;
-    item_2.x1=4624.916000;
-    item_2.y1=3046.296000;
-    item_2.sn1='N';
-    item_2.sn2='N';
-    item_2.ew1='E';
-    item_2.ew2='E';
+    item_2.coords[1].x=transform_from_geo(46.3986);
+    item_2.coords[1].y=transform_from_geo(30.7716);
+
     item_2.speed=0.0;
     traffic_list = g_list_append (traffic_list, item_1);
     traffic_list = g_list_append (traffic_list, item_2);
