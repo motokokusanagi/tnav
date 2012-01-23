@@ -22,13 +22,11 @@
 #include "coord.h"
 #include <glib.h>
 // TODO make traffic_item with ints
+
 typedef struct traffic_item
 {
-	int x1;
-	int y1;
-	int x2;
-	int y2;
-	char ew1,sn1,ew2,sn2,speed;
+	struct coord coords[2];
+	char speed;
 }traffic_item;
 
 struct map_priv {
@@ -41,7 +39,9 @@ struct map_priv {
 
 struct map_rect_priv {
 	struct map_selection *sel;
+	GList *traffic_first;
 	GList *traffic_list;
+	int coord_flag;
 	int attr_pos;
 	enum attr_type attr_last;
 	char attrs[SIZE];

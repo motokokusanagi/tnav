@@ -38,6 +38,13 @@
 //#include <dbus/dbus.h>
 #include "traffic.h"
 
+void
+transformation_to_geo (struct coord_geo *g, struct coord *c)
+{
+	g->lng=c->x/6371000.0/M_PI*180;
+	g->lat=navit_atan(exp(c->y/6371000.0))/M_PI*360-90;
+}
+
 static int map_id;
 
 static void
@@ -57,9 +64,6 @@ get_line(struct map_rect_priv *mr)
 	        dbg(1,"read traffic line: %s\n", mr->line);
 	}
 }
-//struct TraffCoord *traf;
-//void query(struct TraffCoord *traf,int *count);
-//int  ParseJsonData (struct TraffCoord *TraffData, char * strJson);
 
 static void
 map_destroy_traffic(struct map_priv *m)
@@ -78,39 +82,24 @@ traffic_coord_rewind(void *priv_data)
 {
 }
 
-static int
-parse_line(struct map_rect_priv *mr, int attr)
-{
-	int pos;
-	// give line with coords
-	pos=coord_parse(mr->line, projection_mg, &mr->c);
-	if (pos < strlen(mr->line) && attr) {
-		strcpy(mr->attrs, mr->line+pos);
-	}
-	return pos;
-}
 
 static int
 traffic_coord_get(void *priv_data, struct coord *c, int count)
 {
-  dbg(1,"Count is %d\n",count);
+	dbg(1,"Count is %d\n",count);
 	struct map_rect_priv *mr=priv_data;
 	int ret=0;
 	dbg(1,"traffic_coord_get %d\n",count);
-	while (count--) {
-		if (mr->f && !feof(mr->f) && (!mr->item.id_hi || !mr->eoc) && parse_line(mr, mr->item.id_hi)) {
-			*c=mr->c;
-			dbg(1,"c=0x%x,0x%x\n", c->x, c->y);
-			c++;
-			ret++;		
-			get_line(mr);
-			if (mr->item.id_hi)
-				mr->eoc=1;
-		} else {
-			mr->more=0;
-			break;
-
+	traffic_item *r = (traffic_item*)mr->traffic_list->prev->data;
+	if(count==1)
+		c[0] = r->coords[flag];
+	if(mr->coord_flag<2) {
+		ret = 1;
+	} else {
+		ret = 0;
 	}
+	mr->coord_flag++;
+
 	return ret;
 }
 
@@ -122,44 +111,12 @@ traffic_attr_rewind(void *priv_data)
 	mr->attr_last=attr_none;
 }
 
-static void
-traffic_encode_attr(char *attr_val, enum attr_type attr_type, struct attr *attr)
-{
-	if (attr_type >= attr_type_int_begin && attr_type <= attr_type_int_end) 
-		attr->u.num=atoi(attr_val);
-	else
-		attr->u.str=attr_val;
-}
 
 static int
 traffic_attr_get(void *priv_data, enum attr_type attr_type, struct attr *attr)
 {	
 	struct map_rect_priv *mr=priv_data;
 	char *str=NULL;
-	dbg(1,"traffic_attr_get mr=%p attrs='%s' ", mr, mr->attrs);
-	if (attr_type != mr->attr_last) {
-		dbg(1,"reset attr_pos\n");
-		mr->attr_pos=0;
-		mr->attr_last=attr_type;
-	}
-	if (attr_type == attr_any) {
-		dbg(1,"attr_any");
-		if (attr_from_line(mr->attrs,NULL,&mr->attr_pos,mr->attr, mr->attr_name)) {
-			attr_type=attr_from_name(mr->attr_name);
-			dbg(1,"found attr '%s' 0x%x\n", mr->attr_name, attr_type);
-			attr->type=attr_type;
-			traffic_encode_attr(mr->attr, attr_type, attr);
-			return 1;
-		}
-	} else {
-		str=attr_to_name(attr_type);
-		dbg(1,"attr='%s' ",str);
-		if (attr_from_line(mr->attrs,str,&mr->attr_pos,mr->attr, NULL)) {
-			traffic_encode_attr(mr->attr, attr_type, attr);
-			dbg(1,"found\n");
-			return 1;
-		}
-	}
 	dbg(1,"not found\n");
 	return 0;
 }
@@ -188,42 +145,7 @@ map_rect_new_traffic(struct map_priv *map, struct map_selection *sel)
 	mr->item.priv_data=mr; //too
 	mr->traffic_list=NULL;
 	query (mr->traffic_list);
-	
-//	if (map->is_pipe) {
-//#ifdef HAVE_POPEN
-//
-//		char *oargs,*args=g_strdup(map->filename),*sep=" ";
-//		enum layer_type lay;
-//		g_free(mr->args);
-//		while (sel) {
-//			oargs=args;
-//			args=g_strdup_printf("%s 0x%x 0x%x 0x%x 0x%x", oargs, sel->u.c_rect.lu.x, sel->u.c_rect.lu.y, sel->u.c_rect.rl.x, sel->u.c_rect.rl.y);
-//			g_free(oargs);
-//			for (lay=layer_town ; lay < layer_end ; lay++) {
-//				oargs=args;
-//				args=g_strdup_printf("%s%s%d", oargs, sep, sel->order);
-//				g_free(oargs);
-//				sep=",";
-//			}
-//			sel=sel->next;
-//		}
-//		dbg(1,"popen args %s\n", args);
-//		mr->args=args;
-//		mr->f=popen(mr->args, "r");
-//		mr->pos=0;
-//		mr->lastlen=0;
-//#else
-//		dbg(0,"map_rect_new_traffic is unable to work with pipes %s\n",map->filename);
-//#endif
-//
-//
-//	} else {
-//		mr->f=fopen(map->filename, "r");
-//	}
-//	if(!mr->f) {
-//		printf("map_rect_new_traffic unable to open traffic %s. Error: %s\n",map->filename, strerror(errno));
-//	}
-//	get_line(mr);
+	mr->traffic_first = g_list_first(mr->traffic_list);
 	return mr;
 }
 
@@ -249,14 +171,14 @@ static struct item *
 map_rect_get_item_traffic(struct map_rect_priv *mr)
 {
 
-//	char *p,type[SIZE];
 	if(mr->traffic_list ) {
 		traffic_item* iterator = (traffic_item*)mr->traffic_list->data;
 		mr->traffic_list = g_list_next(mr->traffic_list);
 		mr->item.type = item_from_name("street_traffic");
-
-
+		mr->coord_flag = 0;
+		return &mr->item;
 	}else {
+		mr->traffic_list = g_list_first(mr->traffic_list);
 		return NULL;
 	}
 
@@ -405,7 +327,7 @@ int  ParseJsonData (struct TraffCoord *TraffData, char * strJson)
 #define debug1
 
 #ifdef debug1
-void query_stub(GList *traffic_list)
+void query(GList *traffic_list)
 {
 	traffic_item item_1 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
 	item_1.x1=4629.868000;
@@ -430,9 +352,10 @@ void query_stub(GList *traffic_list)
     traffic_list = g_list_append (traffic_list, item_1);
     traffic_list = g_list_append (traffic_list, item_2);
 
+
 }
 #else
-void query_real(GList *traffic_list)
+void query(GList *traffic_list)
 {
 	traffic_item item_1 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
 	item_1.x1=4629.868000;
