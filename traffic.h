@@ -56,4 +56,4 @@ struct map_rect_priv {
 void
 transformation_to_geo (struct coord_geo *g, struct coord *c);
 void
-query(GList *traffic_list);
+query(struct map_rect_priv *mr);
