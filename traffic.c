@@ -51,8 +51,6 @@ static void
 map_destroy_traffic(struct map_priv *m)
 {
 	dbg(1,"map_destroy_traffic\n");
-	g_free(m->filename);
-	
 	if(m->charset) {
 		g_free(m->charset);
 	}
@@ -74,7 +72,7 @@ traffic_coord_get(void *priv_data, struct coord *c, int count)
 	dbg(1,"traffic_coord_get %d\n",count);
 	traffic_item *r = (traffic_item*)mr->traffic_list->prev->data;
 	if(count==1)
-		c[0] = r->coords[flag];
+		c[0] = r->coords[mr->coord_flag];
 	if(mr->coord_flag<2) {
 		ret = 1;
 	} else {
