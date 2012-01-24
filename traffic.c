@@ -308,12 +308,12 @@ int  ParseJsonData (struct TraffCoord *TraffData, char * strJson)
 #ifdef debug1
 void query(GList *traffic_list)
 {
-	traffic_item item_1 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
+	traffic_item item_1;
 	item_1.coords[0].x=46.4978*6371000.0*M_PI/180;
 	item_1.coords[0].y=log(navit_tan(M_PI_4+30.6277*M_PI/360))*6371000.0;
 
     item_1.speed=0.0;
-    traffic_item item_2 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
+    traffic_item item_2;
     item_2.coords[1].x=46.3986*6371000.0*M_PI/180;
     item_2.coords[1].y=log(navit_tan(M_PI_4+30.7716*M_PI/360))*6371000.0;
 
