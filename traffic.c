@@ -48,24 +48,6 @@ transformation_to_geo (struct coord_geo *g, struct coord *c)
 static int map_id;
 
 static void
-get_line(struct map_rect_priv *mr)
-{
-	//recode  to gettig from text array
-	// lastlen used for pipes?
-	if(mr->f) {
-		if (!mr->m->is_pipe) 
-			mr->pos=ftell(mr->f);
-		else
-			mr->pos+=mr->lastlen;
-		fgets(mr->line, SIZE, mr->f);
-		mr->lastlen=strlen(mr->line)+1;
-		if (strlen(mr->line) >= SIZE-1) 
-			printf("line too long\n");
-	        dbg(1,"read traffic line: %s\n", mr->line);
-	}
-}
-
-static void
 map_destroy_traffic(struct map_priv *m)
 {
 	dbg(1,"map_destroy_traffic\n");

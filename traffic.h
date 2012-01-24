@@ -21,7 +21,7 @@
 #include "attr.h"
 #include "coord.h"
 #include <glib.h>
-// TODO make traffic_item with ints
+
 
 typedef struct traffic_item
 {
