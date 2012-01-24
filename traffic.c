@@ -66,13 +66,16 @@ traffic_coord_rewind(void *priv_data)
 static int
 traffic_coord_get(void *priv_data, struct coord *c, int count)
 {
-	dbg(1,"Count is %d\n",count);
+	dbg(0,"Count is %d\n",count);
 	struct map_rect_priv *mr=priv_data;
 	int ret=0;
 	dbg(1,"traffic_coord_get %d\n",count);
 	traffic_item *r = (traffic_item*)mr->traffic_list->prev->data;
-	if(count==1)
+
+	if(count==1) {
 		c[0] = r->coords[mr->coord_flag];
+		dbg (0,"%d -- %d \n", c[0].x,c[0].y);
+	}
 	if(mr->coord_flag<2) {
 		ret = 1;
 	} else {
@@ -125,6 +128,7 @@ map_rect_new_traffic(struct map_priv *map, struct map_selection *sel)
 	mr->item.priv_data=mr; //too
 	mr->traffic_list=NULL;
 	query (mr->traffic_list);
+	dbg (0,"%d----4444--\n",mr->traffic_list);
 	mr->traffic_first = g_list_first(mr->traffic_list);
 	return mr;
 }
@@ -150,17 +154,21 @@ map_rect_destroy_traffic(struct map_rect_priv *mr)
 static struct item *
 map_rect_get_item_traffic(struct map_rect_priv *mr)
 {
-
+	dbg (0,"%d------\n",mr->traffic_list);
 	if(mr->traffic_list ) {
+
 //		traffic_item* iterator = (traffic_item*)mr->traffic_list->data;
 		mr->traffic_list = g_list_next(mr->traffic_list);
 		mr->item.type = item_from_name("street_traffic");
 		mr->coord_flag = 0;
+
 		return &mr->item;
 	}else {
 		mr->traffic_list = g_list_first(mr->traffic_list);
+
 		return NULL;
 	}
+
 
 //	for(;;) {
 //		if (feof(mr->f)) {
@@ -308,20 +316,22 @@ int  ParseJsonData (struct TraffCoord *TraffData, char * strJson)
 #ifdef debug1
 void query(GList *traffic_list)
 {
-	traffic_item item_1;
-	item_1.coords[0].x=46.4978*6371000.0*M_PI/180;
-	item_1.coords[0].y=log(navit_tan(M_PI_4+30.6277*M_PI/360))*6371000.0;
+	traffic_item *item_1 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
+	item_1->coords[0].x=46.4978*6371000.0*M_PI/180;
+	item_1->coords[0].y=log(navit_tan(M_PI_4+30.6277*M_PI/360))*6371000.0;
+    item_1->speed=0.0;
 
-    item_1.speed=0.0;
-    traffic_item item_2;
-    item_2.coords[1].x=46.3986*6371000.0*M_PI/180;
-    item_2.coords[1].y=log(navit_tan(M_PI_4+30.7716*M_PI/360))*6371000.0;
-
-    item_2.speed=0.0;
-    traffic_list = g_list_append (traffic_list, &item_1);
-    traffic_list = g_list_append (traffic_list, &item_2);
+    traffic_item *item_2 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
+    item_2->coords[1].x=46.3986*6371000.0*M_PI/180;
+    item_2->coords[1].y=log(navit_tan(M_PI_4+30.7716*M_PI/360))*6371000.0;
+    item_2->speed=0.0;
 
 
+
+    traffic_list = g_list_insert (traffic_list, &item_1, 0);
+//   traffic_item *r = (traffic_item*)traffic_list->data;
+//    dbg (0,"%d---1111---%d\n",r->coords[0].x, r->coords[0].y);
+    traffic_list = g_list_insert (traffic_list, &item_2, 1);
 }
 #else
 void query(GList *traffic_list)
