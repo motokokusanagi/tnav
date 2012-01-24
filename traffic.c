@@ -152,7 +152,7 @@ map_rect_get_item_traffic(struct map_rect_priv *mr)
 {
 
 	if(mr->traffic_list ) {
-		traffic_item* iterator = (traffic_item*)mr->traffic_list->data;
+//		traffic_item* iterator = (traffic_item*)mr->traffic_list->data;
 		mr->traffic_list = g_list_next(mr->traffic_list);
 		mr->item.type = item_from_name("street_traffic");
 		mr->coord_flag = 0;
@@ -243,7 +243,7 @@ static struct map_priv *
 map_new_traffic(struct map_methods *meth, struct attr **attrs, struct callback_list *cbl)
 {
 	struct map_priv *m;
-	struct attr *data=attr_search(attrs, NULL, attr_data); // look for data 
+//	struct attr *data=attr_search(attrs, NULL, attr_data); // look for data
 	struct attr *charset=attr_search(attrs, NULL, attr_charset); // look for charset
 	struct attr *flags=attr_search(attrs, NULL, attr_flags); // we can configure plugin via flags
 

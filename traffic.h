@@ -53,3 +53,7 @@ struct map_rect_priv {
 	char *args;
 };
 
+void
+transformation_to_geo (struct coord_geo *g, struct coord *c);
+void
+query(GList *traffic_list);
