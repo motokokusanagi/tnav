@@ -57,3 +57,5 @@ void
 transformation_to_geo (struct coord_geo *g, struct coord *c);
 void
 query(struct map_rect_priv *mr);
+
+

@@ -108,6 +108,28 @@ static struct item_methods methods_traffic = {
 static struct map_rect_priv *
 map_rect_new_traffic(struct map_priv *map, struct map_selection *sel)
 {
+	if (sel!=NULL)
+		{
+			double x1,y1,x2,y2,x3,y3,x4,y4;
+			x1=sel->u.c_rect.lu.x/6371000.0/M_PI*180;
+			y1=navit_atan(exp(sel->u.c_rect.lu.y/6371000.0))/M_PI*360-90;
+			x2=sel->u.c_rect.rl.x/6371000.0/M_PI*180;
+			y2=navit_atan(exp(sel->u.c_rect.rl.y/6371000.0))/M_PI*360-90;
+			x3=sel->u.p_rect.lu.x/6371000.0/M_PI*180;
+			y3=navit_atan(exp(sel->u.p_rect.lu.y/6371000.0))/M_PI*360-90;
+			x4=sel->u.p_rect.rl.x/6371000.0/M_PI*180;
+			y4=navit_atan(exp(sel->u.p_rect.rl.y/6371000.0))/M_PI*360-90;
+
+			dbg (0,"---transformed---\n");
+			dbg(0, "x1 = %f\n",x1);
+			dbg(0, "y1 = %f\n",y1);
+			dbg(0, "x2 = %f\n",x2);
+			dbg(0, "y2 = %f\n",y2);
+			dbg(0, "x3 = %f\n",x3);
+			dbg(0, "y3 = %f\n",y3);
+			dbg(0, "x4 = %f\n",x4);
+			dbg(0, "y4 = %f\n",y4);
+		}
 	struct map_rect_priv *mr;
 	dbg(1,"map_rect_new_traffic\n");
 	mr=g_new0(struct map_rect_priv, 1);
@@ -301,7 +323,7 @@ int  ParseJsonData (struct TraffCoord *TraffData, char * strJson)
 #ifdef debug1
 void query(struct map_rect_priv *mr)
 {
-
+/*
 	traffic_item *item_1 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
 	item_1->coords[0].x=46.4978*6371000.0*M_PI/180;
 	item_1->coords[0].y=log(navit_tan(M_PI_4+30.6277*M_PI/360))*6371000.0;
@@ -311,15 +333,19 @@ void query(struct map_rect_priv *mr)
     item_2->coords[1].x=46.3986*6371000.0*M_PI/180;
     item_2->coords[1].y=log(navit_tan(M_PI_4+30.7716*M_PI/360))*6371000.0;
     item_2->speed=0.0;
-
-
+*/
+	traffic_item *item_1 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
+	item_1->coords[0].x = mr->sel->u.p_rect.lu.x;
+	item_1->coords[0].y = mr->sel->u.p_rect.lu.y;
+	item_1->coords[1].x = mr->sel->u.p_rect.rl.x;
+	item_1->coords[1].y = mr->sel->u.p_rect.rl.y;
 
     mr->traffic_list = g_list_append (mr->traffic_list, item_1);
     //traffic_item *r = (traffic_item*)mr->traffic_list->data;
     //dbg (0,"%d---1111---%d\n",r->coords[0].x, r->coords[0].y);
-    mr->traffic_list = g_list_append (mr->traffic_list, item_2);
-    mr->traffic_list = g_list_append (mr->traffic_list, item_2);
-    mr->traffic_list = g_list_append (mr->traffic_list, item_2);
+   // mr->traffic_list = g_list_append (mr->traffic_list, item_2);
+   // mr->traffic_list = g_list_append (mr->traffic_list, item_2);
+   // mr->traffic_list = g_list_append (mr->traffic_list, item_2);
 }
 #else
 void query(GList *traffic_list)
