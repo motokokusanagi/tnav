@@ -378,7 +378,7 @@ xpmdir = $(pkgdatadir)/xpm
 skinsdir = $(pkgdatadir)/skins
 fontsdir = $(pkgdatadir)/fonts
 mapsdir = $(pkgdatadir)/maps
-AM_CPPFLAGS =  -pthread -I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include   -pthread -I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include   -I$(top_srcdir)/navit -DMODULE=map_traffic
+AM_CPPFLAGS =  -pthread -I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include   -pthread -I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include -I/usr/lib/glib-2.0/include  -I$(top_srcdir)/navit -DMODULE=map_traffic
 modulemap_LTLIBRARIES = libmap_traffic.la
 #noinst_LTLIBRARIES = libmap_traffic.la
 libmap_traffic_la_SOURCES = traffic.c traffic.h

@@ -37,6 +37,7 @@
 #include "file.h"
 //#include <dbus/dbus.h>
 #include "traffic.h"
+#include <json.h>
 
 void
 transformation_to_geo (struct coord_geo *g, struct coord *c)
@@ -279,43 +280,50 @@ map_new_traffic(struct map_methods *meth, struct attr **attrs, struct callback_l
 	return m;
 }
 
-/*
-int  ParseJsonData (struct TraffCoord *TraffData, char * strJson)
+
+
+// TODO: method to parse json string to list of traffic lines
+
+int  ParseJsonData (GList *TrafficList, char *strJson)
 {
 	struct json_object *JsonData;
 	struct json_object *JsonTraffCoordData, *JsonTraffCoord, *JsonTmp;
 	int Length, i;
+	traffic_item *temp;
 
 	JsonData = json_tokener_parse(strJson);
 
 	JsonTraffCoordData = json_object_object_get(JsonData, "TraffCoordData");
 	Length = json_object_array_length(JsonTraffCoordData);
+	struct coord_geo temp_coord;
+
 
 	for (i=0; i<Length; i++)
 	{
+		temp = (traffic_item*)malloc(sizeof(traffic_item));
 		JsonTraffCoord = json_object_array_get_idx(JsonTraffCoordData, i);
+
+
 		JsonTmp = json_object_object_get(JsonTraffCoord, "FirstCoord");
-		TraffData[i].FirstCoord = json_object_get_double(JsonTmp);
-		JsonTmp = json_object_object_get(JsonTraffCoord, "FirstDirection");
-		TraffData[i].Direction[0] = *json_object_get_string(JsonTmp);
+		temp_coord.lat =  json_object_get_double(JsonTmp);
 		JsonTmp = json_object_object_get(JsonTraffCoord, "SecondCoord");
-		TraffData[i].SecondCoord = json_object_get_double(JsonTmp);
-		JsonTmp = json_object_object_get(JsonTraffCoord, "SecondDirection");
-		TraffData[i].Direction[1] = *json_object_get_string(JsonTmp);
+		temp_coord.lng = json_object_get_double(JsonTmp);
+		transform_from_geo(projection_mg,&temp_coord,temp->coords[0]);
+
 		JsonTmp = json_object_object_get(JsonTraffCoord, "ThirdCoord");
-		TraffData[i].ThirdCoord = json_object_get_double(JsonTmp);
-		JsonTmp = json_object_object_get(JsonTraffCoord, "ThirdDirection");
-		TraffData[i].Direction[2] = *json_object_get_string(JsonTmp);
+		temp_coord.lat =  json_object_get_double(JsonTmp);
 		JsonTmp = json_object_object_get(JsonTraffCoord, "FourthCoord");
-		TraffData[i].FourthCoord = json_object_get_double(JsonTmp);
-		JsonTmp = json_object_object_get(JsonTraffCoord, "FourthDirection");
-		TraffData[i].Direction[3] = *json_object_get_string(JsonTmp);
+		temp_coord.lng = json_object_get_double(JsonTmp);
+		transform_from_geo(projection_mg,&temp_coord,temp->coords[1]);
+
 		JsonTmp = json_object_object_get(JsonTraffCoord, "MaxSpeed");
-		TraffData[i].MaxSpeed = json_object_get_int(JsonTmp);
+		temp->speed = (char)json_object_get_int(JsonTmp);
+		//TODO:  recode structure traffic_item speed as integer
+
 	}
 	return Length;
 }
-*/
+
 
 
 #define debug1
@@ -323,17 +331,6 @@ int  ParseJsonData (struct TraffCoord *TraffData, char * strJson)
 #ifdef debug1
 void query(struct map_rect_priv *mr)
 {
-
-	/*traffic_item *item_1 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-	item_1->coords[0].x=46.4978*6371000.0*M_PI/180;
-	item_1->coords[0].y=log(navit_tan(M_PI_4+30.6277*M_PI/360))*6371000.0;
-    item_1->speed=0.0;
-
-    traffic_item *item_2 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-    item_2->coords[1].x=46.3986*6371000.0*M_PI/180;
-    item_2->coords[1].y=log(navit_tan(M_PI_4+30.7716*M_PI/360))*6371000.0;
-    item_2->speed=0.0;*/
-
 	traffic_item *item_1 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
 	item_1->coords[0].x = mr->sel->u.p_rect.lu.x;
 	item_1->coords[0].y = mr->sel->u.p_rect.lu.y;
@@ -362,11 +359,6 @@ void query(struct map_rect_priv *mr)
     mr->traffic_list = g_list_append (mr->traffic_list, item_2);
     mr->traffic_list = g_list_append (mr->traffic_list, item_3);
     mr->traffic_list = g_list_append (mr->traffic_list, item_5);
-    //traffic_item *r = (traffic_item*)mr->traffic_list->data;
-    //dbg (0,"%d---1111---%d\n",r->coords[0].x, r->coords[0].y);
-/*   mr->traffic_list = g_list_append (mr->traffic_list, item_2);
-    mr->traffic_list = g_list_append (mr->traffic_list, item_2);
-    mr->traffic_list = g_list_append (mr->traffic_list, item_2);*/
 }
 #else
 void query(GList *traffic_list)
@@ -499,10 +491,6 @@ void query(GList *traffic_list)
 
 }
 #endif
-
-
-
-
 
 void
 plugin_init(void)
