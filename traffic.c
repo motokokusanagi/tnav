@@ -35,14 +35,14 @@
 #include "attr.h"
 #include "transform.h"
 #include "file.h"
-//#include <dbus/dbus.h>
+#include <dbus-1.0/dbus/dbus.h>
 #include "traffic.h"
 
 void
 transformation_to_geo (struct coord_geo *g, struct coord *c)
 {
 	g->lng=c->x/6371000.0/M_PI*180;
-	g->lat=navit_atan(exp(c->y/6371000.0))/M_PI*360-90;
+	g->lat=navit_atan(exp(c->y/6371000.0))/M_PI*360-9;
 }
 
 static int map_id;
@@ -321,185 +321,125 @@ int  ParseJsonData (struct TraffCoord *TraffData, char * strJson)
 #define debug1
 
 #ifdef debug1
+
+#define dCALLER "traffic.method.caller"
+#define dOBJECT "/traffic/method/Object"
+#define dSERVER "traffic.method.server"
+#define dTYPE "traffic.method.Type"
+
+
 void query(struct map_rect_priv *mr)
 {
-
-	/*traffic_item *item_1 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-	item_1->coords[0].x=46.4978*6371000.0*M_PI/180;
-	item_1->coords[0].y=log(navit_tan(M_PI_4+30.6277*M_PI/360))*6371000.0;
-    item_1->speed=0.0;
-
-    traffic_item *item_2 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-    item_2->coords[1].x=46.3986*6371000.0*M_PI/180;
-    item_2->coords[1].y=log(navit_tan(M_PI_4+30.7716*M_PI/360))*6371000.0;
-    item_2->speed=0.0;*/
-
-	traffic_item *item_1 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
+/*
+ 	traffic_item *item_1 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
 	item_1->coords[0].x = mr->sel->u.p_rect.lu.x;
 	item_1->coords[0].y = mr->sel->u.p_rect.lu.y;
 	item_1->coords[1].x = mr->sel->u.p_rect.rl.x;
 	item_1->coords[1].y = mr->sel->u.p_rect.rl.y;
 
-	traffic_item *item_2 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-		item_2->coords[0].x = mr->sel->u.p_rect.lu.x-15;
-		item_2->coords[0].y = mr->sel->u.p_rect.lu.y-15;
-		item_2->coords[1].x = mr->sel->u.p_rect.rl.x-12;
-		item_2->coords[1].y = mr->sel->u.p_rect.rl.y-12;
-
-	traffic_item *item_3 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-			item_3->coords[0].x = mr->sel->u.p_rect.lu.y-3;
-			item_3->coords[0].y = mr->sel->u.p_rect.lu.x-3;
-			item_3->coords[1].x = mr->sel->u.p_rect.rl.y+3;
-			item_3->coords[1].y = mr->sel->u.p_rect.rl.x+3;
-
-    traffic_item *item_5 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-								item_5->coords[0].x = mr->sel->u.p_rect.lu.y-3;
-								item_5->coords[0].y = mr->sel->u.p_rect.lu.x-3;
-								item_5->coords[1].x = mr->sel->u.p_rect.rl.y+3;
-								item_5->coords[1].y = mr->sel->u.p_rect.rl.x+3;
     mr->traffic_list = g_list_append (mr->traffic_list, item_1);
-    mr->traffic_list = g_list_append (mr->traffic_list, item_2);
-    mr->traffic_list = g_list_append (mr->traffic_list, item_3);
-    mr->traffic_list = g_list_append (mr->traffic_list, item_5);
-    //traffic_item *r = (traffic_item*)mr->traffic_list->data;
-    //dbg (0,"%d---1111---%d\n",r->coords[0].x, r->coords[0].y);
-/*   mr->traffic_list = g_list_append (mr->traffic_list, item_2);
-    mr->traffic_list = g_list_append (mr->traffic_list, item_2);
-    mr->traffic_list = g_list_append (mr->traffic_list, item_2);*/
-}
+*/
+
+	   DBusMessage* msg;
+	   DBusMessageIter args;
+	   DBusConnection* conn;
+	   DBusError err;
+	   DBusPendingCall* pending;
+	   int ret;
+	   char *stat;
+	   char *param = "get";
+	   //initialiset the errors
+	   dbus_error_init(&err);
+	   //connect to the system bus and check for errors
+	   conn = dbus_bus_get(DBUS_BUS_SESSION, &err);
+	   if (dbus_error_is_set(&err)) {
+	      fprintf(stderr, "Connection Error (%s)\n", err.message);
+	      dbus_error_free(&err);
+	   }
+	   if (NULL == conn) {
+	      exit(1);
+	   }
+
+	   // request our name on the bus
+	   ret = dbus_bus_request_name(conn, dCALLER, DBUS_NAME_FLAG_REPLACE_EXISTING , &err);
+	   if (dbus_error_is_set(&err)) {
+	      fprintf(stderr, "Name Error (%s)\n", err.message);
+	      dbus_error_free(&err);
+	   }
+	   if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret) {
+	      exit(1);
+	   }
+
+	   // create a new method call and check for errors
+	   msg = dbus_message_new_method_call(dSERVER, // target for the method call
+	                                      dOBJECT, // object to call on
+	                                      dTYPE, // interface to call on
+	                                      "Method"); // method name
+	   if (NULL == msg) {
+	      fprintf(stderr, "Message Null\n");
+	      exit(1);
+	   }
+
+	   // append arguments
+	   dbus_message_iter_init_append(msg, &args);
+	   if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &param)) {
+	      fprintf(stderr, "Out Of Memory!\n");
+	      exit(1);
+	   }
+
+	   // send message and get a handle for a reply
+	   if (!dbus_connection_send_with_reply (conn, msg, &pending, -1)) { // -1 is default timeout
+	      fprintf(stderr, "Out Of Memory!\n");
+	      exit(1);
+	   }
+	   if (NULL == pending) {
+	      fprintf(stderr, "Pending Call Null\n");
+	      exit(1);
+	   }
+	   dbus_connection_flush(conn);
+
+	   printf("Request Sent\n");
+
+	   // free message
+	   dbus_message_unref(msg);
+
+	   // block until we receive a reply
+	   dbus_pending_call_block(pending);
+
+	   // get the reply message
+	   msg = dbus_pending_call_steal_reply(pending);
+	   if (NULL == msg) {
+	      fprintf(stderr, "Reply Null\n");
+	      goto l;
+	   }
+	   // free the pending message handle
+	   dbus_pending_call_unref(pending);
+	   // read the parameters
+	   if (!dbus_message_iter_init(msg, &args))
+	      fprintf(stderr, "Message has no arguments!\n");
+	   else if (DBUS_TYPE_STRING!= dbus_message_iter_get_arg_type(&args))
+	      fprintf(stderr, "Argument is not string!\n");
+	   else
+	      dbus_message_iter_get_basic(&args, &stat);
+
+//	   stat is json
+//	   strcpy(str,stat);
+//	   printf("Got Reply: %s, \n", stat);
+	   l:
+//
+//	   free reply and close connection
+	   dbus_message_unref(msg);
+	   dbus_bus_release_name(conn,dCALLER,&err);
+
+	   if(stat!=NULL){
+//	      *count = ParseJsonData(traf,stat);
+	   } else {
+	   }
+
+	}
+
 #else
-void query(GList *traffic_list)
-{
-	traffic_item item_1 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-	item_1.x1=4629.868000;
-	item_1.y1=3037.662000;
-	item_1.x2=4624.916000;
-	item_1.y2=3046.296000;
-	item_1.sn1='N';
-	item_1.sn2='N';
-    item_1.ew1='E';
-    item_1.ew2='E';
-    item_1.speed=0.0;
-
-    traffic_item item_2 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-    item_2.x2=4623.916000;
-    item_2.y2=3046.296000;
-    item_2.x1=4624.916000;
-    item_2.y1=3046.296000;
-   	item_2.sn1='N';
-    item_2.sn2='N';
-    item_2.ew1='E';
-    item_2.ew2='E';
-    item_2.speed=0.0;
-
-    traffic_list = g_list_append (traffic_list, item_1);
-    traffic_list = g_list_append (traffic_list, item_2);
-
-//   DBusMessage* msg;
-//   DBusMessageIter args;
-//   DBusConnection* conn;
-//   DBusError err;
-//   DBusPendingCall* pending;
-//   int ret;
-//   char *stat;
-//   char *param = "get";
-//   //printf("Calling remote method with %s\n", param);
-//   //initialiset the errors
-//   dbus_error_init(&err);
-//   //connect to the system bus and check for errors
-//   conn = dbus_bus_get(DBUS_BUS_SESSION, &err);
-//   if (dbus_error_is_set(&err)) {
-//      fprintf(stderr, "Connection Error (%s)\n", err.message);
-//      dbus_error_free(&err);
-//   }
-//   if (NULL == conn) {
-//      exit(1);
-//   }
-//
-//   // request our name on the bus
-//   ret = dbus_bus_request_name(conn, "traffic.method.caller", DBUS_NAME_FLAG_REPLACE_EXISTING , &err);
-//   if (dbus_error_is_set(&err)) {
-//      fprintf(stderr, "Name Error (%s)\n", err.message);
-//      dbus_error_free(&err);
-//   }
-//   if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret) {
-//      exit(1);
-//   }
-//
-//   // create a new method call and check for errors
-//   msg = dbus_message_new_method_call("traffic.method.server", // target for the method call
-//                                      "/traffic/method/Object", // object to call on
-//                                      "traffic.method.Type", // interface to call on
-//                                      "Method"); // method name
-//   if (NULL == msg) {
-//      fprintf(stderr, "Message Null\n");
-//      exit(1);
-//   }
-//
-//   // append arguments
-//   dbus_message_iter_init_append(msg, &args);
-//   if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &param)) {
-//      fprintf(stderr, "Out Of Memory!\n");
-//      exit(1);
-//   }
-//
-//   // send message and get a handle for a reply
-//   if (!dbus_connection_send_with_reply (conn, msg, &pending, -1)) { // -1 is default timeout
-//      fprintf(stderr, "Out Of Memory!\n");
-//      exit(1);
-//   }
-//   if (NULL == pending) {
-//      fprintf(stderr, "Pending Call Null\n");
-//      exit(1);
-//   }
-//   dbus_connection_flush(conn);
-//
-//   printf("Request Sent\n");
-//
-//   // free message
-//   dbus_message_unref(msg);
-//
-//   // block until we recieve a reply
-//   dbus_pending_call_block(pending);
-//
-//   // get the reply message
-//   msg = dbus_pending_call_steal_reply(pending);
-//   if (NULL == msg) {
-//      fprintf(stderr, "Reply Null\n");
-//     // exit(1);
-//      goto l;
-//   }
-//   // free the pending message handle
-//   dbus_pending_call_unref(pending);
-//   // read the parameters
-//   if (!dbus_message_iter_init(msg, &args))
-//      fprintf(stderr, "Message has no arguments!\n");
-//   else if (DBUS_TYPE_STRING!= dbus_message_iter_get_arg_type(&args))
-//      fprintf(stderr, "Argument is not string!\n");
-//   else
-//      dbus_message_iter_get_basic(&args, &stat);
-
-// /// stat is json
-
-
-//   //strcpy(str,stat);
-
-//  // printf("Got Reply: %s, \n", stat);
-//   l:
-//   // free reply and close connection
-
-//   dbus_message_unref(msg);
-//   dbus_bus_release_name(conn,"traffic.method.caller",&err);
-
-//   if(stat!=NULL){
-//      *count = ParseJsonData(traf,stat);
-//   } else {
-//   }
-
-}
 #endif
-
-
 
 
 
