@@ -341,23 +341,24 @@ void query(struct map_rect_priv *mr)
 	item_1->coords[1].y = mr->sel->u.p_rect.rl.y;
 
 	traffic_item *item_2 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-		item_2->coords[0].x = mr->sel->u.p_rect.lu.x-15;
-		item_2->coords[0].y = mr->sel->u.p_rect.lu.y-15;
-		item_2->coords[1].x = mr->sel->u.p_rect.rl.x-12;
-		item_2->coords[1].y = mr->sel->u.p_rect.rl.y-12;
+	item_2->coords[0].x = mr->sel->u.p_rect.lu.x-15;
+	item_2->coords[0].y = mr->sel->u.p_rect.lu.y-15;
+	item_2->coords[1].x = mr->sel->u.p_rect.rl.x-12;
+	item_2->coords[1].y = mr->sel->u.p_rect.rl.y-12;
 
 	traffic_item *item_3 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-			item_3->coords[0].x = mr->sel->u.p_rect.lu.y-3;
-			item_3->coords[0].y = mr->sel->u.p_rect.lu.x-3;
-			item_3->coords[1].x = mr->sel->u.p_rect.rl.y+3;
-			item_3->coords[1].y = mr->sel->u.p_rect.rl.x+3;
+	item_3->coords[0].x = mr->sel->u.p_rect.lu.y-3;
+	item_3->coords[0].y = mr->sel->u.p_rect.lu.x-3;
+	item_3->coords[1].x = mr->sel->u.p_rect.rl.y+3;
+	item_3->coords[1].y = mr->sel->u.p_rect.rl.x+3;
 
     traffic_item *item_5 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-								item_5->coords[0].x = mr->sel->u.p_rect.lu.y-3;
-								item_5->coords[0].y = mr->sel->u.p_rect.lu.x-3;
-								item_5->coords[1].x = mr->sel->u.p_rect.rl.y+3;
-								item_5->coords[1].y = mr->sel->u.p_rect.rl.x+3;
-    mr->traffic_list = g_list_append (mr->traffic_list, item_1);
+	item_5->coords[0].x = mr->sel->u.p_rect.lu.y-3;
+	item_5->coords[0].y = mr->sel->u.p_rect.lu.x-3;
+	item_5->coords[1].x = mr->sel->u.p_rect.rl.y+3;
+	item_5->coords[1].y = mr->sel->u.p_rect.rl.x+3;
+
+	mr->traffic_list = g_list_append (mr->traffic_list, item_1);
     mr->traffic_list = g_list_append (mr->traffic_list, item_2);
     mr->traffic_list = g_list_append (mr->traffic_list, item_3);
     mr->traffic_list = g_list_append (mr->traffic_list, item_5);
