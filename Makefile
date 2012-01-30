@@ -137,7 +137,7 @@ CXXDEPMODE = depmode=gcc3
 CXXFLAGS = -g -O2 -Wall -Wcast-align -Wpointer-arith -Wreturn-type -D_GNU_SOURCE
 CYGPATH_W = echo
 DATADIRNAME = share
-DBUS_CFLAGS = -pthread -I/usr/include/dbus-1.0 -I/usr/lib/i386-linux-gnu/dbus-1.0/include -I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include  
+DBUS_CFLAGS = -pthread -I/usr/include/dbus-1.0 -I/usr/lib/dbus-1.0/include -I/usr/lib/i386-linux-gnu/dbus-1.0/include -I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include  
 DBUS_LIBS = -pthread -L/usr/lib/i386-linux-gnu -ldbus-glib-1 -ldbus-1 -lpthread -lgobject-2.0 -lgthread-2.0 -lrt -lglib-2.0  
 DBUS_SERVICE_DIR = ${prefix}/share/dbus-1/services
 DEFS = -DHAVE_CONFIG_H
@@ -166,9 +166,12 @@ GENCAT = gencat
 GLC_CFLAGS = 
 GLC_LIBS = -lGLC
 GLIBC21 = yes
+
 GLIB_CFLAGS = -pthread -I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include  -I//usr/lib/glib-2.0/include
+
+GLIB_CFLAGS = -pthread -I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include -pthread -I/usr/include/dbus-1.0 -I/usr/lib/i386-linux-gnu/dbus-1.0/include -I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include
 GLIB_LIBS = -pthread -L/usr/lib/i386-linux-gnu -lgthread-2.0 -lrt -lglib-2.0  
-GMODULE_CFLAGS = -pthread -I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include  
+GMODULE_CFLAGS = -pthread -I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include
 GMODULE_LIBS = -Wl,--export-dynamic -pthread -L/usr/lib/i386-linux-gnu -lgmodule-2.0 -lrt -lglib-2.0  
 GMSGFMT = /usr/bin/msgfmt
 GPSBT_CFLAGS = 
@@ -235,7 +238,7 @@ MODULE_LIBADD =
 MOFILES =  af.mo ar.mo ast.mo bg.mo ca.mo cs.mo da.mo de.mo de_CH.mo el.mo en_AU.mo en_GB.mo eo.mo es.mo et.mo eu.mo fi.mo fo.mo fr.mo fr_CH.mo gl.mo he.mo hr.mo hu.mo id.mo it.mo ja.mo jv.mo kk.mo lt.mo lv.mo mk.mo nb.mo nds.mo nl.mo nn.mo pl.mo pt.mo pt_BR.mo ro.mo ru.mo sk.mo sl.mo sr.mo sv.mo ta.mo te.mo th.mo tr.mo uk.mo ur.mo vi.mo zh_CN.mo zh_HK.mo
 MSGFMT = /usr/bin/msgfmt
 MSGMERGE = /usr/bin/msgmerge
-NAVIT_CFLAGS =  -pthread -I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include   -pthread -I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include  
+NAVIT_CFLAGS =  -pthread -I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include
 NAVIT_LIBS =  -pthread -L/usr/lib/i386-linux-gnu -lgthread-2.0 -lrt -lglib-2.0   -Wl,--export-dynamic -pthread -L/usr/lib/i386-linux-gnu -lgmodule-2.0 -lrt -lglib-2.0   
 NAVIT_MODULE_LDFLAGS = 
 NAVIT_SOCKET_LDFLAGS = 
@@ -378,7 +381,7 @@ xpmdir = $(pkgdatadir)/xpm
 skinsdir = $(pkgdatadir)/skins
 fontsdir = $(pkgdatadir)/fonts
 mapsdir = $(pkgdatadir)/maps
-AM_CPPFLAGS =  -pthread -I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include   -pthread -I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include -I/usr/lib/glib-2.0/include  -I$(top_srcdir)/navit -DMODULE=map_traffic
+AM_CPPFLAGS =  -pthread -I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include   -pthread -I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include -I/usr/lib/glib-2.0/include  -I$(top_srcdir)/navit -DMODULE=map_traffic -I$(DBUS_CFLAGS) -I/usr/include/json 
 modulemap_LTLIBRARIES = libmap_traffic.la
 #noinst_LTLIBRARIES = libmap_traffic.la
 libmap_traffic_la_SOURCES = traffic.c traffic.h
