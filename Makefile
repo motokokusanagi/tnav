@@ -87,10 +87,11 @@ am__installdirs = "$(DESTDIR)$(modulemapdir)"
 LTLIBRARIES = $(modulemap_LTLIBRARIES) $(noinst_LTLIBRARIES)
 libmap_traffic_la_LIBADD =
 am_libmap_traffic_la_OBJECTS = traffic.lo
+
 libmap_traffic_la_OBJECTS = $(am_libmap_traffic_la_OBJECTS)
 libmap_traffic_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(libmap_traffic_la_LDFLAGS) $(LDFLAGS) -o $@
+	$(libmap_traffic_la_LDFLAGS) $(LDFLAGS) -ljson -ldbus-1 -o  $@
 #am_libmap_traffic_la_rpath =
 am_libmap_traffic_la_rpath = -rpath $(modulemapdir)
 DEFAULT_INCLUDES = -I. -I$(top_builddir)
@@ -103,9 +104,10 @@ LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
+
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
+	$(LDFLAGS) -ljson -ldbus-1 -o $@
 SOURCES = $(libmap_traffic_la_SOURCES)
 DIST_SOURCES = $(libmap_traffic_la_SOURCES)
 ETAGS = etags
