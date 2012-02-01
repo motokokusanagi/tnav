@@ -67,13 +67,13 @@ traffic_coord_rewind(void *priv_data)
 static int
 traffic_coord_get(void *priv_data, struct coord *c, int count)
 {
-	dbg(0,"Count is %d\n",count);
+	//dbg(0,"Count is %d\n",count);
 	struct map_rect_priv *mr=priv_data;
 	int ret=0;
 	traffic_item *r = (traffic_item*)mr->traffic_list->prev->data;
 	if(r){
 		*c = r->coords[0];
-		dbg (0,"%d -- %d \n", c[0].x,c[0].y);
+		//dbg (0,"%d -- %d \n", c[0].x,c[0].y);
 		c++;
 		*c = r->coords[1];
 		ret=2;
@@ -145,7 +145,8 @@ map_rect_new_traffic(struct map_priv *map, struct map_selection *sel)
 	mr->item.priv_data=mr; //too
 	mr->traffic_list=NULL;
 	mr->sel = sel;
-	query(mr);
+	//query(mr);
+	//dbg (0,"0x%x\n",mr->traffic_list);
 	return mr;
 }
 
@@ -160,9 +161,9 @@ map_rect_destroy_traffic(struct map_rect_priv *mr)
 static struct item *
 map_rect_get_item_traffic(struct map_rect_priv *mr)
 {
-	dbg (0,"0x%x\n",mr->traffic_list);
+	//dbg (0,"0x%x\n",mr->traffic_list);
 	if(mr->traffic_list && mr->traffic_list->next) {
-		dbg(0,"Hello\n");
+		//dbg(0,"Hello\n");
 		//traffic_item* iterator = (traffic_item*)mr->traffic_list->data;
 		mr->traffic_list = g_list_next(mr->traffic_list);
 		mr->item.type = item_from_name("street_traffic");
@@ -277,10 +278,18 @@ map_new_traffic(struct map_methods *meth, struct attr **attrs, struct callback_l
 	return m;
 }
 
-
+void debug_print(GList *list) {
+	traffic_item *temp;
+	GList *it=list;
+	while(it){
+		temp = (traffic_item*)it->data;
+		//printf("Speed: %d\n",temp->speed);
+		it = g_list_next(it);
+	}
+}
 
 // TODO: method to parse json string to list of traffic lines recode as allocator
-int ParseJsonData (GList *TrafficList, char *strJson)
+int ParseJsonData (GList **TrafficList, char *strJson)
 {
 	int Length, i;
 	struct json_object *JsonData;
@@ -288,17 +297,18 @@ int ParseJsonData (GList *TrafficList, char *strJson)
 	traffic_item *temp;
 	struct coord_geo temp_coord;
 	JsonData = json_tokener_parse(strJson);
-	JsonTraffCoordData = json_object_object_get(JsonData, "TraffCoordData");
+	JsonTraffCoordData = json_object_object_get(JsonData, "TraffData");
 	Length = json_object_array_length(JsonTraffCoordData);
 
 
 	for (i=0; i<Length; i++)
 	{
 		temp = (traffic_item*)malloc(sizeof(traffic_item));
+
 		JsonTraffCoord = json_object_array_get_idx(JsonTraffCoordData, i);
 		JsonTmp = json_object_object_get(JsonTraffCoord, "lat1");
-		printf("%lf\n",JsonTmp);
 		temp_coord.lat =  json_object_get_double(JsonTmp);
+		//printf("%f\n",temp_coord.lat);
 		JsonTmp = json_object_object_get(JsonTraffCoord, "lng1");
 		temp_coord.lng = json_object_get_double(JsonTmp);
 		transform_from_geo(projection_mg,&temp_coord,&temp->coords[0]);
@@ -311,10 +321,12 @@ int ParseJsonData (GList *TrafficList, char *strJson)
 
 		JsonTmp = json_object_object_get(JsonTraffCoord, "speed");
 		temp->speed = (char)json_object_get_int(JsonTmp);
-
-		TrafficList = g_list_append(TrafficList,temp);
+		//dbg (0,"list0x%x\n",*TrafficList);
+		*TrafficList = g_list_append(*TrafficList,temp);
 
 	}
+	//debug_print(*TrafficList);
+	//dbg (0,"0x%x\n",*TrafficList);
 	return Length;
 }
 
@@ -331,7 +343,7 @@ int ParseJsonData (GList *TrafficList, char *strJson)
 
 // function to query over dbus
 
-void dbus_query(char *parameter, char *result)
+void dbus_query(char *parameter, char **result)
 {
 	DBusMessage* msg;
 	DBusMessageIter args;
@@ -405,10 +417,11 @@ void dbus_query(char *parameter, char *result)
 	    fprintf(stderr, "Argument is not string!\n");
 	else
 	    dbus_message_iter_get_basic(&args, &tmp);
-	curs = tmp
-	g_malloc()
-	printf("%s\n",result);
 
+	len = strlen(tmp);
+	*result = g_malloc(len*sizeof(char));
+	strcpy(*result,tmp);
+	//printf("%s\n",*result);
 
 	l:
 	//free reply and close connection
@@ -419,133 +432,14 @@ void dbus_query(char *parameter, char *result)
 
 void query(struct map_rect_priv *mr)
 {
-/*
- 	traffic_item *item_1 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
->>>>>>> f5c24bf2fc2093754905b108074dd846ba0c8a9d
-	item_1->coords[0].x = mr->sel->u.p_rect.lu.x;
-	item_1->coords[0].y = mr->sel->u.p_rect.lu.y;
-	item_1->coords[1].x = mr->sel->u.p_rect.rl.x;
-	item_1->coords[1].y = mr->sel->u.p_rect.rl.y;
-
-<<<<<<< HEAD
-	traffic_item *item_2 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-	item_2->coords[0].x = mr->sel->u.p_rect.lu.x-15;
-	item_2->coords[0].y = mr->sel->u.p_rect.lu.y-15;
-	item_2->coords[1].x = mr->sel->u.p_rect.rl.x-12;
-	item_2->coords[1].y = mr->sel->u.p_rect.rl.y-12;
-
-	traffic_item *item_3 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-	item_3->coords[0].x = mr->sel->u.p_rect.lu.y-3;
-	item_3->coords[0].y = mr->sel->u.p_rect.lu.x-3;
-	item_3->coords[1].x = mr->sel->u.p_rect.rl.y+3;
-	item_3->coords[1].y = mr->sel->u.p_rect.rl.x+3;
-
-    traffic_item *item_5 = (struct traffic_item *)malloc(sizeof(struct traffic_item));
-	item_5->coords[0].x = mr->sel->u.p_rect.lu.y-3;
-	item_5->coords[0].y = mr->sel->u.p_rect.lu.x-3;
-	item_5->coords[1].x = mr->sel->u.p_rect.rl.y+3;
-	item_5->coords[1].y = mr->sel->u.p_rect.rl.x+3;
-
-	mr->traffic_list = g_list_append (mr->traffic_list, item_1);
-    mr->traffic_list = g_list_append (mr->traffic_list, item_2);
-    mr->traffic_list = g_list_append (mr->traffic_list, item_3);
-    mr->traffic_list = g_list_append (mr->traffic_list, item_5);
-*/
-/*
-	   DBusMessage* msg;
-	   DBusMessageIter args;
-	   DBusConnection* conn;
-	   DBusError err;
-	   DBusPendingCall* pending;
-	   int ret;
-	   char *stat; // json string will be here TODO: rename
-	   char *param = "get";
-	   //initialiset the errors
-	   dbus_error_init(&err);
-	   //connect to the system bus and check for errors
-	   conn = dbus_bus_get(DBUS_BUS_SESSION, &err);
-	   if (dbus_error_is_set(&err)) {
-	      fprintf(stderr, "Connection Error (%s)\n", err.message);
-	      dbus_error_free(&err);
-	   }
-	   if (NULL == conn) {
-	      exit(1);
-	   }
-
-	   // request our name on the bus
-	   ret = dbus_bus_request_name(conn, dCALLER, DBUS_NAME_FLAG_REPLACE_EXISTING , &err);
-	   if (dbus_error_is_set(&err)) {
-	      fprintf(stderr, "Name Error (%s)\n", err.message);
-	      dbus_error_free(&err);
-	   }
-	   if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret) {
-	      exit(1);
-	   }
-
-	   // create a new method call and check for errors
-	   msg = dbus_message_new_method_call(dSERVER, // target for the method call
-	                                      dOBJECT, // object to call on
-	                                      dTYPE, // interface to call on
-	                                      "Method"); // method name
-	   if (NULL == msg) {
-	      fprintf(stderr, "Message Null\n");
-	      exit(1);
-	   }
-
-	   // append arguments
-	   dbus_message_iter_init_append(msg, &args);
-	   if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &param)) {
-	      fprintf(stderr, "Out Of Memory!\n");
-	      exit(1);
-	   }
-
-	   // send message and get a handle for a reply
-	   if (!dbus_connection_send_with_reply (conn, msg, &pending, -1)) { // -1 is default timeout
-	      fprintf(stderr, "Out Of Memory!\n");
-	      exit(1);
-	   }
-	   if (NULL == pending) {
-	      fprintf(stderr, "Pending Call Null\n");
-	      exit(1);
-	   }
-	   dbus_connection_flush(conn);
-
-	   printf("Request Sent\n");
-
-	   // free message
-	   dbus_message_unref(msg);
-
-	   // block until we receive a reply
-	   dbus_pending_call_block(pending);
-
-	   // get the reply message
-	   msg = dbus_pending_call_steal_reply(pending);
-	   if (NULL == msg) {
-	      fprintf(stderr, "Reply Null\n");
-	      goto l;
-	   }
-	   // free the pending message handle
-	   dbus_pending_call_unref(pending);
-	   // read the parameters
-	   if (!dbus_message_iter_init(msg, &args))
-	      fprintf(stderr, "Message has no arguments!\n");
-	   else if (DBUS_TYPE_STRING!= dbus_message_iter_get_arg_type(&args))
-	      fprintf(stderr, "Argument is not string!\n");
-	   else
-	      dbus_message_iter_get_basic(&args, &stat);
-	   l:
-//	   free reply and close connection
-	   dbus_message_unref(msg);
-	   dbus_bus_release_name(conn,dCALLER,&err);
-*/
-
 	char *jsonString;
 	char *param = "get";
-	dbus_query(param,jsonString);
-	printf("Value: %d\n",jsonString);
+	dbus_query(param,&jsonString);
+
+	//printf("Value: %s\n",jsonString);
 	if(jsonString!=NULL) {
-		ParseJsonData(mr->traffic_first,jsonString);
-	}else {
+		ParseJsonData(&mr->traffic_list,jsonString);
+		free(jsonString);
 	}
 }
 
