@@ -145,8 +145,8 @@ map_rect_new_traffic(struct map_priv *map, struct map_selection *sel)
 	mr->item.priv_data=mr; //too
 	mr->traffic_list=NULL;
 	mr->sel = sel;
-	//query(mr);
-	//dbg (0,"0x%x\n",mr->traffic_list);
+	query(mr);
+	dbg (0,"0x%p\n",mr->traffic_list);
 	return mr;
 }
 
@@ -277,7 +277,7 @@ map_new_traffic(struct map_methods *meth, struct attr **attrs, struct callback_l
 	}
 	return m;
 }
-
+/*
 void debug_print(GList *list) {
 	traffic_item *temp;
 	GList *it=list;
@@ -287,46 +287,44 @@ void debug_print(GList *list) {
 		it = g_list_next(it);
 	}
 }
-
+*/
 // TODO: method to parse json string to list of traffic lines recode as allocator
+// TODO: check data for correctness
 int ParseJsonData (GList **TrafficList, char *strJson)
 {
-	int Length, i;
+	int Length=0, i;
 	struct json_object *JsonData;
 	struct json_object *JsonTraffCoordData, *JsonTraffCoord, *JsonTmp;
 	traffic_item *temp;
 	struct coord_geo temp_coord;
-	JsonData = json_tokener_parse(strJson);
-	JsonTraffCoordData = json_object_object_get(JsonData, "TraffData");
-	Length = json_object_array_length(JsonTraffCoordData);
+	if(strJson) {
+		JsonData = json_tokener_parse(strJson);
+		JsonTraffCoordData = json_object_object_get(JsonData, "TraffData");
+		Length = json_object_array_length(JsonTraffCoordData);
+		for (i=0; i<Length; i++) {
+			temp = (traffic_item*)malloc(sizeof(traffic_item));
+			JsonTraffCoord = json_object_array_get_idx(JsonTraffCoordData, i);
+			JsonTmp = json_object_object_get(JsonTraffCoord, "lat1");
+			temp_coord.lat =  json_object_get_double(JsonTmp);
+			//printf("%f\n",temp_coord.lat);
+			JsonTmp = json_object_object_get(JsonTraffCoord, "lng1");
+			temp_coord.lng = json_object_get_double(JsonTmp);
+			transform_from_geo(projection_mg,&temp_coord,&temp->coords[0]);
 
+			JsonTmp = json_object_object_get(JsonTraffCoord, "lat2");
+			temp_coord.lat =  json_object_get_double(JsonTmp);
+			JsonTmp = json_object_object_get(JsonTraffCoord, "lng2");
+			temp_coord.lng = json_object_get_double(JsonTmp);
+			transform_from_geo(projection_mg,&temp_coord,&temp->coords[1]);
+			JsonTmp = json_object_object_get(JsonTraffCoord, "speed");
+			temp->speed = (char)json_object_get_int(JsonTmp);
+			//dbg (0,"list0x%x\n",*TrafficList);
+			*TrafficList = g_list_append(*TrafficList,temp);
 
-	for (i=0; i<Length; i++)
-	{
-		temp = (traffic_item*)malloc(sizeof(traffic_item));
-
-		JsonTraffCoord = json_object_array_get_idx(JsonTraffCoordData, i);
-		JsonTmp = json_object_object_get(JsonTraffCoord, "lat1");
-		temp_coord.lat =  json_object_get_double(JsonTmp);
-		//printf("%f\n",temp_coord.lat);
-		JsonTmp = json_object_object_get(JsonTraffCoord, "lng1");
-		temp_coord.lng = json_object_get_double(JsonTmp);
-		transform_from_geo(projection_mg,&temp_coord,&temp->coords[0]);
-
-		JsonTmp = json_object_object_get(JsonTraffCoord, "lat2");
-		temp_coord.lat =  json_object_get_double(JsonTmp);
-		JsonTmp = json_object_object_get(JsonTraffCoord, "lng2");
-		temp_coord.lng = json_object_get_double(JsonTmp);
-		transform_from_geo(projection_mg,&temp_coord,&temp->coords[1]);
-
-		JsonTmp = json_object_object_get(JsonTraffCoord, "speed");
-		temp->speed = (char)json_object_get_int(JsonTmp);
-		//dbg (0,"list0x%x\n",*TrafficList);
-		*TrafficList = g_list_append(*TrafficList,temp);
-
+		}
+		//debug_print(*TrafficList);
+		//dbg (0,"0x%x\n",*TrafficList);
 	}
-	//debug_print(*TrafficList);
-	//dbg (0,"0x%x\n",*TrafficList);
 	return Length;
 }
 

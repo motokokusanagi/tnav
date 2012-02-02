@@ -23,8 +23,7 @@
 #include <glib.h>
 
 
-typedef struct traffic_item
-{
+typedef struct traffic_item {
 	struct coord coords[2];
 	char speed;
 }traffic_item;
@@ -39,14 +38,13 @@ struct map_priv {
 
 struct map_rect_priv {
 	struct map_selection *sel;
-	GList *traffic_first;
 	GList *traffic_list;
 	int coord_flag;
 	int attr_pos;
 	enum attr_type attr_last;
-	char attrs[SIZE];
-	char attr[SIZE];
-	char attr_name[SIZE];
+	//char attrs[SIZE];
+	//char attr[SIZE];
+	//char attr_name[SIZE];
 	struct coord c;
 	struct map_priv *m;
 	struct item item;
@@ -55,7 +53,8 @@ struct map_rect_priv {
 
 void
 transformation_to_geo (struct coord_geo *g, struct coord *c);
+
 void
-query(struct map_rect_priv *mr);
+query (struct map_rect_priv *mr);
 
 
