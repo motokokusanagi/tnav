@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 #include "config.h"
 #include "debug.h"
 #include "plugin.h"
@@ -61,12 +62,16 @@ map_destroy_traffic(struct map_priv *m)
 static void
 traffic_coord_rewind(void *priv_data)
 {
+
 }
 
 //TODO: recode
 static int
 traffic_coord_get(void *priv_data, struct coord *c, int count)
 {
+	static int t=1;
+	//clock_t time1 = clock();
+	//dbg(0,"time%d: %d\tin seconds: %d\n",t++,(int)time1,(int)time1/CLOCKS_PER_SEC);
 	//dbg(0,"Count is %d\n",count);
 	struct map_rect_priv *mr=priv_data;
 	int ret=0;
@@ -349,7 +354,9 @@ void dbus_query(char *parameter, char **result)
 	DBusError err;
 	DBusPendingCall* pending;
 	int ret,len;
-	char *tmp,curs;
+	char *tmp;
+	clock_t time1 = clock();
+	dbg(0,"time1: %d\n",(int)time1);
 	dbus_error_init(&err);
 	//connect to the system bus and check for errors
 	conn = dbus_bus_get(DBUS_BUS_SESSION, &err);
@@ -425,20 +432,62 @@ void dbus_query(char *parameter, char **result)
 	//free reply and close connection
 	dbus_message_unref(msg);
 	dbus_bus_release_name(conn,dCALLER,&err);
+	clock_t time2 = clock();
+		dbg(0,"time2: %d\n",(int)time1);
 	//printf("%s\n",result);
 }
 
 void query(struct map_rect_priv *mr)
 {
-	char *jsonString;
+	char *jsonString;/*="{\
+			\"TraffData\": [\
+			        {\
+			          \"lat1\" : 40.7406,\
+			          \"lng1\" : -73.9902,\
+			        \"lat2\" :40.7635,\
+			           \"lng2\" :-73.9728,\
+			          \"speed\" : 5\
+			        },\
+			        {\
+			          \"lat1\" : 40.7634,\
+			          \"lng1\" : -73.9723,\
+			           \"lat2\" :40.7623,\
+			           \"lng2\" :-73.966,\
+			           \"speed\" : 5\
+			        },\
+			        {\
+			          \"lat1\" : 40.7625,\
+			          \"lng1\" : -73.966,\
+			         \"lat2\" :40.7758,\
+			           \"lng2\" :-73.9424,\
+			           \"speed\" : 5\
+			        },\
+			        {\
+			          \"lat1\" : 40.7759,\
+			          \"lng1\" : -73.9423,\
+			          \"lat2\" :40.7985,\
+			           \"lng2\" :-73.9526,\
+			           \"speed\" : 5\
+			        },\
+			        {\
+			          \"lat1\" : 0,\
+			          \"lng1\" : 0,\
+			           \"lng2\" :0,\
+			           \"speed\" : 5\
+			        }\
+			        ]\
+			}";*/
 	char *param = "get";
+
 	dbus_query(param,&jsonString);
+
 
 	//printf("Value: %s\n",jsonString);
 	if(jsonString!=NULL) {
 		ParseJsonData(&mr->traffic_list,jsonString);
 		free(jsonString);
 	}
+
 }
 
 void
