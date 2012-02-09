@@ -137,16 +137,16 @@ map_rect_new_traffic(struct map_priv *map, struct map_selection *sel)
 	mr->m=map;
 	mr->sel=sel;
 	if (map->flags & 1)
-		mr->item.id_hi=1; // seems to be must statment
+		mr->item.id_hi=1;
 	else
 		mr->item.id_hi=0;
 	mr->item.id_lo=0;
-	mr->item.meth=&methods_traffic; // too
-	mr->item.priv_data=mr; //too
+	mr->item.meth=&methods_traffic;
+	mr->item.priv_data=mr;
 	mr->traffic_list=NULL;
 	mr->sel = sel;
 	query(mr);
-	dbg (0,"0x%p\n",mr->traffic_list);
+	dbg (1,"0x%p\n",mr->traffic_list);
 	return mr;
 }
 
@@ -257,17 +257,17 @@ static struct map_priv *
 map_new_traffic(struct map_methods *meth, struct attr **attrs, struct callback_list *cbl)
 {
 	struct map_priv *m;
-//	struct attr *data=attr_search(attrs, NULL, attr_data); // look for data
-	struct attr *charset=attr_search(attrs, NULL, attr_charset); // look for charset
-	struct attr *flags=attr_search(attrs, NULL, attr_flags); // we can configure plugin via flags
+	struct attr *data=attr_search(attrs, NULL, attr_data);
+	struct attr *charset=attr_search(attrs, NULL, attr_charset);
+	struct attr *flags=attr_search(attrs, NULL, attr_flags);
 
-	//if (! data)
-	//	return NULL;
-	// TODO: do something with data
+	if (! data)
+		return NULL;
+
 	*meth=map_methods_traffic;
 	m=g_new0(struct map_priv, 1);
 	m->id=++map_id;
-
+	m->engine=g_strdup(data->u.str);
 	if (flags)
 		m->flags=flags->u.num; //
 
@@ -327,8 +327,6 @@ int ParseJsonData (GList **TrafficList, char *strJson)
 	}
 	return Length;
 }
-
-
 
 #define debug1
 

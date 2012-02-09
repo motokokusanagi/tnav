@@ -30,6 +30,7 @@ typedef struct traffic_item {
 
 struct map_priv {
 	int id;
+	char *engine;
 	char *charset;
 	int flags;
 };
