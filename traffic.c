@@ -106,6 +106,8 @@ static struct item_methods methods_traffic = {
         traffic_attr_get,
 };
 
+
+
 static struct map_rect_priv *
 map_rect_new_traffic(struct map_priv *map, struct map_selection *sel)
 {
@@ -123,10 +125,13 @@ map_rect_new_traffic(struct map_priv *map, struct map_selection *sel)
 	mr->item.priv_data=mr;
 	mr->traffic_list=NULL;
 	mr->sel = sel;
+
 	query(mr);
 	dbg (1,"0x%p\n",mr->traffic_list);
 	return mr;
 }
+
+
 
 
 static void
@@ -227,7 +232,7 @@ int ParseJsonData (GList **TrafficList, char *strJson)
 			JsonTraffCoordData = json_object_object_get(JsonData, "TraffData");
 			Length = json_object_array_length(JsonTraffCoordData);
 			for (i=0; i<Length; i++) {
-				temp = (traffic_item*)malloc(sizeof(traffic_item));
+				temp = (traffic_item*)g_malloc(sizeof(traffic_item));
 				JsonTraffCoord = json_object_array_get_idx(JsonTraffCoordData, i);
 				JsonTmp = json_object_object_get(JsonTraffCoord, "lat1");
 				temp_coord.lat =  json_object_get_double(JsonTmp);
@@ -247,7 +252,7 @@ int ParseJsonData (GList **TrafficList, char *strJson)
 				*TrafficList = g_list_append(*TrafficList,temp);
 
 			}
-			temp = (traffic_item*)malloc(sizeof(traffic_item));
+			temp = (traffic_item*)g_malloc(sizeof(traffic_item));
 			*TrafficList = g_list_append(*TrafficList,temp);
 		}
 	}
@@ -346,7 +351,31 @@ void dbus_query(char *parameter, char **result)
 
 void query(struct map_rect_priv *mr)
 {
-	char *jsonString;
+	char *jsonString;/*="{\
+\"TraffData\": [\
+        {\
+          \"lat1\" : 40.7406,\
+          \"lng1\" : -73.9902,\
+           \"lat2\" :40.7406,\
+           \"lng2\" :-73.9902,\
+           \"speed\" : 5\
+        },\
+        {\
+          \"lat1\" : 40.7406,\
+          \"lng1\" : -73.9902,\
+           \"lat2\" :40.7405,\
+           \"lng2\" :-73.99,\
+           \"speed\" : 5\
+        },\
+        {\
+          \"lat1\" : 40.7405,\
+          \"lng1\" : -73.99,\
+           \"lat2\" :40.7406,\
+           \"lng2\" :-73.99,\
+           \"speed\" : 5\
+        }]}\
+";*/
+
 	char param[256];
 	struct coord_geo geo1,ge2;
 	transform_to_geo(projection_mg,&mr->sel->u.c_rect.lu,&geo1);
@@ -354,12 +383,14 @@ void query(struct map_rect_priv *mr)
 	sprintf(param,"get lp: %lf %lf rb: %lf %lf order:%d",geo1.lat,geo1.lng,ge2.lat,ge2.lng,mr->sel->order);
 	dbg(0,"%s\n",param);
 	char *param1 = "get";
+
 	dbus_query(param1,&jsonString);
 	//printf("Value: %s\n",jsonString);
 	if(jsonString!=NULL) {
 		ParseJsonData(&mr->traffic_list,jsonString);
 		free(jsonString);
 	}
+//	sleep(1);
 }
 
 void
