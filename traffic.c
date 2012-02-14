@@ -78,7 +78,7 @@ traffic_coord_get(void *priv_data, struct coord *c, int count)
 	traffic_item *r = (traffic_item*)mr->traffic_list->prev->data;
 	if(r){
 		*c = r->coords[0];
-		//dbg (0,"%d -- %d \n", c[0].x,c[0].y);
+		dbg (1,"%d -- %d \n", c[0].x,c[0].y);
 		c++;
 		*c = r->coords[1];
 		ret=2;
@@ -111,49 +111,32 @@ static struct item_methods methods_traffic = {
         traffic_attr_get,
 };
 
+
+
 static struct map_rect_priv *
 map_rect_new_traffic(struct map_priv *map, struct map_selection *sel)
 {
-	/*if (sel!=NULL)
-		{
-			double x1,y1,x2,y2,x3,y3,x4,y4;
-			x1=sel->u.c_rect.lu.x/6371000.0/M_PI*180;
-			y1=navit_atan(exp(sel->u.c_rect.lu.y/6371000.0))/M_PI*360-90;
-			x2=sel->u.c_rect.rl.x/6371000.0/M_PI*180;
-			y2=navit_atan(exp(sel->u.c_rect.rl.y/6371000.0))/M_PI*360-90;
-			x3=sel->u.p_rect.lu.x/6371000.0/M_PI*180;
-			y3=navit_atan(exp(sel->u.p_rect.lu.y/6371000.0))/M_PI*360-90;
-			x4=sel->u.p_rect.rl.x/6371000.0/M_PI*180;
-			y4=navit_atan(exp(sel->u.p_rect.rl.y/6371000.0))/M_PI*360-90;
-
-			dbg (0,"---transformed---\n");
-			dbg(0, "x1 = %f\n",x1);
-			dbg(0, "y1 = %f\n",y1);
-			dbg(0, "x2 = %f\n",x2);
-			dbg(0, "y2 = %f\n",y2);
-			dbg(0, "x3 = %f\n",x3);
-			dbg(0, "y3 = %f\n",y3);
-			dbg(0, "x4 = %f\n",x4);
-			dbg(0, "y4 = %f\n",y4);
-		}*/
 	struct map_rect_priv *mr;
 	dbg(1,"map_rect_new_traffic\n");
 	mr=g_new0(struct map_rect_priv, 1);
 	mr->m=map;
 	mr->sel=sel;
 	if (map->flags & 1)
-		mr->item.id_hi=1; // seems to be must statment
+		mr->item.id_hi=1;
 	else
 		mr->item.id_hi=0;
 	mr->item.id_lo=0;
-	mr->item.meth=&methods_traffic; // too
-	mr->item.priv_data=mr; //too
+	mr->item.meth=&methods_traffic;
+	mr->item.priv_data=mr;
 	mr->traffic_list=NULL;
 	mr->sel = sel;
+
 	query(mr);
-	dbg (0,"0x%p\n",mr->traffic_list);
+	dbg (1,"0x%p\n",mr->traffic_list);
 	return mr;
 }
+
+
 
 
 static void
@@ -166,78 +149,15 @@ map_rect_destroy_traffic(struct map_rect_priv *mr)
 static struct item *
 map_rect_get_item_traffic(struct map_rect_priv *mr)
 {
-	//dbg (0,"0x%x\n",mr->traffic_list);
+
 	if(mr->traffic_list && mr->traffic_list->next) {
-		//dbg(0,"Hello\n");
-		//traffic_item* iterator = (traffic_item*)mr->traffic_list->data;
 		mr->traffic_list = g_list_next(mr->traffic_list);
 		mr->item.type = item_from_name("street_traffic");
-		//mr->coord_flag = 0;
-
 		return &mr->item;
 	}else {
 		mr->traffic_list = g_list_first(mr->traffic_list);
 		return NULL;
 	}
-
-
-//	for(;;) {
-//		if (feof(mr->f)) {
-//			dbg(1,"map_rect_get_item_traffic: eof %d\n",mr->item.id_hi);
-//			if (mr->m->flags & 1) {
-//				if (!mr->item.id_hi)
-//					return NULL;
-//				mr->item.id_hi=0;
-//			} else {
-//				if (mr->item.id_hi)
-//					return NULL;
-//				mr->item.id_hi=1;
-//			}
-
-//				fseek(mr->f, 0, SEEK_SET);
-//				clearerr(mr->f);
-
-//			get_line(mr);
-//		}
-//		if ((p=strchr(mr->line,'\n')))
-//			*p='\0';
-//		if (mr->item.id_hi) {
-//			mr->attrs[0]='\0';
-//			if (!parse_line(mr, 1)) {
-//				get_line(mr);
-//				continue;
-//			}
-
-//			mr->eoc=0;
-//			mr->item.id_lo=mr->pos;
-//		} else {
-//			if (parse_line(mr, 1)) {
-//				get_line(mr);
-//				continue;
-//			}
-
-//			if (! mr->line[0]) {
-//				get_line(mr);
-//				continue;
-//			}
-//			mr->item.id_lo=mr->pos;
-//			strcpy(mr->attrs, mr->line);
-//			get_line(mr);
-//			dbg(1,"mr=%p attrs=%s\n", mr, mr->attrs);
-//		}
-//		dbg(1,"get_attrs %s\n", mr->attrs);
-//		if (attr_from_line(mr->attrs,"type",NULL,type,NULL)) {
-
-//			mr->item.type=item_from_name(type);
-//			if (mr->item.type == type_none)
-//				printf("Warning: type '%s' unknown\n", type);
-//		} else {
-//			get_line(mr);
-//			continue;
-//		}
-//		mr->attr_last=attr_none;
-//		mr->more=1;
-
 		return &mr->item;
 	}
 
@@ -262,17 +182,17 @@ static struct map_priv *
 map_new_traffic(struct map_methods *meth, struct attr **attrs, struct callback_list *cbl)
 {
 	struct map_priv *m;
-//	struct attr *data=attr_search(attrs, NULL, attr_data); // look for data
-	struct attr *charset=attr_search(attrs, NULL, attr_charset); // look for charset
-	struct attr *flags=attr_search(attrs, NULL, attr_flags); // we can configure plugin via flags
+	struct attr *data=attr_search(attrs, NULL, attr_data);
+	struct attr *charset=attr_search(attrs, NULL, attr_charset);
+	struct attr *flags=attr_search(attrs, NULL, attr_flags);
 
-	//if (! data)
-	//	return NULL;
-	// TODO: do something with data
+	if (! data)
+		return NULL;
+
 	*meth=map_methods_traffic;
 	m=g_new0(struct map_priv, 1);
 	m->id=++map_id;
-
+	m->engine=g_strdup(data->u.str);
 	if (flags)
 		m->flags=flags->u.num; //
 
@@ -282,19 +202,25 @@ map_new_traffic(struct map_methods *meth, struct attr **attrs, struct callback_l
 	}
 	return m;
 }
-/*
-void debug_print(GList *list) {
-	traffic_item *temp;
-	GList *it=list;
-	while(it){
-		temp = (traffic_item*)it->data;
-		//printf("Speed: %d\n",temp->speed);
-		it = g_list_next(it);
-	}
-}
-*/
+
 // TODO: method to parse json string to list of traffic lines recode as allocator
 // TODO: check data for correctness
+
+struct json_object* json_tokener_parse_verbose(const char *str, enum json_tokener_error *error)
+{
+    struct json_tokener* tok;
+    struct json_object* obj;
+
+    tok = json_tokener_new();
+    obj = json_tokener_parse_ex(tok, str, -1);
+    *error = tok->err;
+    if(tok->err != json_tokener_success) {
+        obj = NULL;
+    }
+
+    json_tokener_free(tok);
+    return obj;
+}
 int ParseJsonData (GList **TrafficList, char *strJson)
 {
 	int Length=0, i;
@@ -302,42 +228,41 @@ int ParseJsonData (GList **TrafficList, char *strJson)
 	struct json_object *JsonTraffCoordData, *JsonTraffCoord, *JsonTmp;
 	traffic_item *temp;
 	struct coord_geo temp_coord;
+	//dbg(0,"%s\n",strJson);
 	if(strJson) {
-		JsonData = json_tokener_parse(strJson);
-		JsonTraffCoordData = json_object_object_get(JsonData, "TraffData");
-		Length = json_object_array_length(JsonTraffCoordData);
-		for (i=0; i<Length; i++) {
-			temp = (traffic_item*)malloc(sizeof(traffic_item));
-			JsonTraffCoord = json_object_array_get_idx(JsonTraffCoordData, i);
-			JsonTmp = json_object_object_get(JsonTraffCoord, "lat1");
-			temp_coord.lat =  json_object_get_double(JsonTmp);
-			//printf("%f\n",temp_coord.lat);
-			JsonTmp = json_object_object_get(JsonTraffCoord, "lng1");
-			temp_coord.lng = json_object_get_double(JsonTmp);
-			transform_from_geo(projection_mg,&temp_coord,&temp->coords[0]);
+		int error;
+		JsonData = json_tokener_parse_verbose(strJson,&error);
 
-			JsonTmp = json_object_object_get(JsonTraffCoord, "lat2");
-			temp_coord.lat =  json_object_get_double(JsonTmp);
-			JsonTmp = json_object_object_get(JsonTraffCoord, "lng2");
-			temp_coord.lng = json_object_get_double(JsonTmp);
-			transform_from_geo(projection_mg,&temp_coord,&temp->coords[1]);
-			JsonTmp = json_object_object_get(JsonTraffCoord, "speed");
-			temp->speed = (char)json_object_get_int(JsonTmp);
-			//dbg (0,"list0x%x\n",*TrafficList);
+		if(error==0) {
+			JsonTraffCoordData = json_object_object_get(JsonData, "TraffData");
+			Length = json_object_array_length(JsonTraffCoordData);
+			for (i=0; i<Length; i++) {
+				temp = (traffic_item*)g_malloc(sizeof(traffic_item));
+				JsonTraffCoord = json_object_array_get_idx(JsonTraffCoordData, i);
+				JsonTmp = json_object_object_get(JsonTraffCoord, "lat1");
+				temp_coord.lat =  json_object_get_double(JsonTmp);
+				//printf("%f\n",temp_coord.lat);
+				JsonTmp = json_object_object_get(JsonTraffCoord, "lng1");
+				temp_coord.lng = json_object_get_double(JsonTmp);
+				transform_from_geo(projection_mg,&temp_coord,&temp->coords[0]);
+
+				JsonTmp = json_object_object_get(JsonTraffCoord, "lat2");
+				temp_coord.lat =  json_object_get_double(JsonTmp);
+				JsonTmp = json_object_object_get(JsonTraffCoord, "lng2");
+				temp_coord.lng = json_object_get_double(JsonTmp);
+				transform_from_geo(projection_mg,&temp_coord,&temp->coords[1]);
+				JsonTmp = json_object_object_get(JsonTraffCoord, "speed");
+				temp->speed = (char)json_object_get_int(JsonTmp);
+				//dbg (0,"list0x%x\n",*TrafficList);
+				*TrafficList = g_list_append(*TrafficList,temp);
+
+			}
+			temp = (traffic_item*)g_malloc(sizeof(traffic_item));
 			*TrafficList = g_list_append(*TrafficList,temp);
-
 		}
-		//debug_print(*TrafficList);
-		//dbg (0,"0x%x\n",*TrafficList);
 	}
 	return Length;
 }
-
-
-
-#define debug1
-
-
 
 #define dCALLER "traffic.method.caller"
 #define dOBJECT "/traffic/method/Object"
@@ -355,10 +280,8 @@ void dbus_query(char *parameter, char **result)
 	DBusPendingCall* pending;
 	int ret,len;
 	char *tmp;
-	clock_t time1 = clock();
-	dbg(0,"time1: %d\n",(int)time1);
 	dbus_error_init(&err);
-	//connect to the system bus and check for errors
+
 	conn = dbus_bus_get(DBUS_BUS_SESSION, &err);
 	if (dbus_error_is_set(&err)) {
 		fprintf(stderr, "Connection Error (%s)\n", err.message);
@@ -376,7 +299,7 @@ void dbus_query(char *parameter, char **result)
 	if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret) {
 		exit(1);
 	}
-	// create a new method call and check for errors
+
 	msg = dbus_message_new_method_call(dSERVER, // target for the method call
 			dOBJECT, // object to call on
 			dTYPE, // interface to call on
@@ -386,7 +309,6 @@ void dbus_query(char *parameter, char **result)
 		exit(1);
 	}
 
-	// append arguments
 	dbus_message_iter_init_append(msg, &args);
 	if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &parameter)) {
 		fprintf(stderr, "Out Of Memory!\n");
@@ -403,91 +325,52 @@ void dbus_query(char *parameter, char **result)
 		exit(1);
 	}
 	dbus_connection_flush(conn);
-	// free message
 	dbus_message_unref(msg);
-	// block until we receive a reply
 	dbus_pending_call_block(pending);
-	// get the reply message
 	msg = dbus_pending_call_steal_reply(pending);
+
 	if (NULL == msg) {
 		fprintf(stderr, "Reply Null\n");
 		goto l;
 	}
-	// free the pending message handle
 	dbus_pending_call_unref(pending);
-	// read the parameters
 	if (!dbus_message_iter_init(msg, &args))
 		fprintf(stderr, "Message has no arguments!\n");
 	else if (DBUS_TYPE_STRING!= dbus_message_iter_get_arg_type(&args))
 	    fprintf(stderr, "Argument is not string!\n");
 	else
 	    dbus_message_iter_get_basic(&args, &tmp);
+	if(tmp) {
+		len = strlen(tmp);
+		*result = g_malloc(len*sizeof(char));
+		strcpy(*result,tmp);
+	}
 
-	len = strlen(tmp);
-	*result = g_malloc(len*sizeof(char));
-	strcpy(*result,tmp);
-	//printf("%s\n",*result);
 
 	l:
 	//free reply and close connection
 	dbus_message_unref(msg);
 	dbus_bus_release_name(conn,dCALLER,&err);
-	clock_t time2 = clock();
-		dbg(0,"time2: %d\n",(int)time1);
-	//printf("%s\n",result);
 }
 
 void query(struct map_rect_priv *mr)
 {
-	char *jsonString;/*="{\
-			\"TraffData\": [\
-			        {\
-			          \"lat1\" : 40.7406,\
-			          \"lng1\" : -73.9902,\
-			        \"lat2\" :40.7635,\
-			           \"lng2\" :-73.9728,\
-			          \"speed\" : 5\
-			        },\
-			        {\
-			          \"lat1\" : 40.7634,\
-			          \"lng1\" : -73.9723,\
-			           \"lat2\" :40.7623,\
-			           \"lng2\" :-73.966,\
-			           \"speed\" : 5\
-			        },\
-			        {\
-			          \"lat1\" : 40.7625,\
-			          \"lng1\" : -73.966,\
-			         \"lat2\" :40.7758,\
-			           \"lng2\" :-73.9424,\
-			           \"speed\" : 5\
-			        },\
-			        {\
-			          \"lat1\" : 40.7759,\
-			          \"lng1\" : -73.9423,\
-			          \"lat2\" :40.7985,\
-			           \"lng2\" :-73.9526,\
-			           \"speed\" : 5\
-			        },\
-			        {\
-			          \"lat1\" : 0,\
-			          \"lng1\" : 0,\
-			           \"lng2\" :0,\
-			           \"speed\" : 5\
-			        }\
-			        ]\
-			}";*/
-	char *param = "get";
+	char *jsonString;
+	char param[256];
+	struct coord_geo geo1,ge2;
+	transform_to_geo(projection_mg,&mr->sel->u.c_rect.lu,&geo1);
+	transform_to_geo(projection_mg,&mr->sel->u.c_rect.rl,&ge2);
+	sprintf(param,"get lp: %lf %lf rb: %lf %lf order:%d",geo1.lat,geo1.lng,ge2.lat,ge2.lng,mr->sel->order);
+	dbg(0,"%s\n",param);
+	char *param1 = "get";
 
-	dbus_query(param,&jsonString);
-
+	dbus_query(param1,&jsonString);
 
 	//printf("Value: %s\n",jsonString);
 	if(jsonString!=NULL) {
 		ParseJsonData(&mr->traffic_list,jsonString);
 		free(jsonString);
 	}
-
 }
 
 void
